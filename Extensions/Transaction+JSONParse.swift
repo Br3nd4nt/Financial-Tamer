@@ -1,0 +1,55 @@
+//
+//  Transaction+JSONParse.swift
+//  Financial Tamer
+//
+//  Created by br3nd4nt on 09.06.2025.
+//
+
+import Foundation
+
+extension Transaction {
+    private static let dateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+    
+    var jsonObject: Any {
+        return [
+            "id": id,
+            "accountId": accountId,
+            "categoryId": categoryId,
+            "amount": amount.doubleValue,
+            "transactionDate": Transaction.dateFormatter.string(from: transactionDate),
+            "comment": comment,
+            "createdAt": Transaction.dateFormatter.string(from: createdAt),
+            "updatedAt": Transaction.dateFormatter.string(from: updatedAt),
+        ]
+    }
+    
+    static func parse(jsonObject: Any) -> Transaction? {
+        guard let dictionary = jsonObject as? [String: Any],
+            let id = dictionary["id"] as? Int,
+            let accountId = dictionary["accountId"] as? Int,
+            let categoryId = dictionary["categoryId"] as? Int,
+            let amountDouble = dictionary["amount"] as? Double,
+            let transactionDateString = dictionary["transactionDate"] as? String,
+            let transactionDate = Transaction.dateFormatter.date(from: transactionDateString),
+            let comment = dictionary["comment"] as? String,
+            let createdAtString = dictionary["createdAt"] as? String,
+            let createdAt = Transaction.dateFormatter.date(from: createdAtString),
+            let updatedAtString = dictionary["updatedAt"] as? String,
+            let updatedAt = Transaction.dateFormatter.date(from: updatedAtString)
+        else { return nil }
+        let amount = Decimal(amountDouble)
+        
+        return Transaction(  id: id,
+                            accountId: accountId,
+                            categoryId: categoryId,
+                            amount: amount,
+                            transactionDate: transactionDate,
+                            comment: comment,
+                            createdAt: createdAt,
+                            updatedAt: updatedAt,)
+    }
+}
