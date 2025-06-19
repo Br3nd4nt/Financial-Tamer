@@ -8,12 +8,16 @@
 import Foundation
 
 final class BankAccountsServiceMock: BankAccountsProtocol {
+    
+    private var mockAccount: BankAccount = BankAccount(id: 1, userId: 1, name: "My account", balance: 10003.7, currency: "USD", createdAt: Date.now, updatedAt: Date.now)
+    
     func getBankAccount(userId: Int) async throws -> BankAccount {
-        return BankAccount(id: 1, userId: 1, name: "My account", balance: 10003.7, currency: "USD", createdAt: Date.now, updatedAt: Date.now)
+        return mockAccount
     }
     
     func updateBankAccount(userId: Int, newAccount: BankAccount) async throws -> BankAccount {
-        return newAccount
+        mockAccount = newAccount
+        return mockAccount
     }
     
 }

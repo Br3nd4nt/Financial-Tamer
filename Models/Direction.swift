@@ -5,7 +5,7 @@
 //  Created by br3nd4nt on 09.06.2025.
 //
 
-enum Direction {
+enum Direction: String {
     case income
     case outcome
 }

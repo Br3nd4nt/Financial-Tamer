@@ -20,8 +20,11 @@ final class TransactionFileCache {
             in: .userDomainMask
         ).first
         
-        //TODO: fix force unwrap
-        self.fileURL = doccumentsDirectory!.appendingPathComponent(filename)
+        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            fatalError("Could not find documents directory")
+        }
+        
+        self.fileURL = documentsDirectory.appendingPathComponent(filename)
     }
     
     func loadFromFile() {

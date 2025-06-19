@@ -12,4 +12,13 @@ protocol TransactionsProtocol {
     func createTransaction(transaction: Transaction) async throws -> Transaction
     func updateTransaction(transaction: Transaction) async throws -> Transaction
     func deleteTransaction(id: Int) async throws -> Void
+    
 }
+
+
+enum TransactionServiceError: Error {
+    case invalidTransaction
+    case dublicatedTransaction
+    case invalidTransactionId
+}
+
