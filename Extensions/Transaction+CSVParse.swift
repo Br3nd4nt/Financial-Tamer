@@ -9,12 +9,6 @@ import Foundation
 
 extension Transaction {
     
-    private static let dateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return formatter
-    }()
-    
     func parseCSV(_ csv: String) throws -> [Transaction] {
         var transactions: [Transaction] = []
         
@@ -41,9 +35,9 @@ extension Transaction {
                 let categoryId = Int(rowDict["categoryId"] ?? ""),
                 let amountDouble = Double(rowDict["amount"] ?? ""),
                 let comment = rowDict["comment"],
-                let transactionDate = Transaction.dateFormatter.date(from: rowDict["transactionDate"] ?? ""),
-                let createdAt = Transaction.dateFormatter.date(from: rowDict["createdAt"] ?? ""),
-                let updatedAt = Transaction.dateFormatter.date(from: rowDict["updatedAt"] ?? "")
+                let transactionDate = dateFormatter.date(from: rowDict["transactionDate"] ?? ""),
+                let createdAt = dateFormatter.date(from: rowDict["createdAt"] ?? ""),
+                let updatedAt = dateFormatter.date(from: rowDict["updatedAt"] ?? "")
             else {continue}
             
             transactions.append(Transaction(

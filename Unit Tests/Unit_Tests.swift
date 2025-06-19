@@ -13,11 +13,6 @@ import Foundation
 
 struct TransactionParseUnitTests {
     
-    private static let dateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return formatter
-    }()
     
     @Test func transactionJSONtoObject() async throws {
         let jsonObject: [String: Any] = [
@@ -41,7 +36,7 @@ struct TransactionParseUnitTests {
 
     @Test func transactionToObject() async throws {
         
-        let date = TransactionParseUnitTests.dateFormatter.date(from: "2025-06-09T13:16:09.705Z")!
+        let date = dateFormatter.date(from: "2025-06-09T13:16:09.705Z")!
         let transaction: Transaction = Transaction(id: 1,
                                                    accountId: 1,
                                                    categoryId: 1,

@@ -47,6 +47,11 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
+		06EEA1AE2E047FE000FE176B /* Utils */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Utils;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +80,7 @@
 				0686362D2DF74167001F2E7F /* Models */,
 				068636122DF74110001F2E7F /* Financial Tamer */,
 				068636252DF7413F001F2E7F /* Unit Tests */,
+				06EEA1AE2E047FE000FE176B /* Utils */,
 				068636112DF74110001F2E7F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -108,6 +114,7 @@
 				0686362D2DF74167001F2E7F /* Models */,
 				0686362E2DF7417A001F2E7F /* Extensions */,
 				0686362F2DF74180001F2E7F /* Services */,
+				06EEA1AE2E047FE000FE176B /* Utils */,
 			);
 			name = "Financial Tamer";
 			packageProductDependencies = (

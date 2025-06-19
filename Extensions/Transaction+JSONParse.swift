@@ -8,22 +8,17 @@
 import Foundation
 
 extension Transaction {
-    private static let dateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return formatter
-    }()
-    
+
     var jsonObject: Any {
         return [
             "id": id,
             "accountId": accountId,
             "categoryId": categoryId,
             "amount": amount.doubleValue,
-            "transactionDate": Transaction.dateFormatter.string(from: transactionDate),
+            "transactionDate": dateFormatter.string(from: transactionDate),
             "comment": comment,
-            "createdAt": Transaction.dateFormatter.string(from: createdAt),
-            "updatedAt": Transaction.dateFormatter.string(from: updatedAt),
+            "createdAt": dateFormatter.string(from: createdAt),
+            "updatedAt": dateFormatter.string(from: updatedAt),
         ]
     }
     
@@ -34,12 +29,12 @@ extension Transaction {
             let categoryId = dictionary["categoryId"] as? Int,
             let amountDouble = dictionary["amount"] as? Double,
             let transactionDateString = dictionary["transactionDate"] as? String,
-            let transactionDate = Transaction.dateFormatter.date(from: transactionDateString),
+            let transactionDate = dateFormatter.date(from: transactionDateString),
             let comment = dictionary["comment"] as? String,
             let createdAtString = dictionary["createdAt"] as? String,
-            let createdAt = Transaction.dateFormatter.date(from: createdAtString),
+            let createdAt = dateFormatter.date(from: createdAtString),
             let updatedAtString = dictionary["updatedAt"] as? String,
-            let updatedAt = Transaction.dateFormatter.date(from: updatedAtString)
+            let updatedAt = dateFormatter.date(from: updatedAtString)
         else { return nil }
         let amount = Decimal(amountDouble)
         
@@ -50,6 +45,6 @@ extension Transaction {
                             transactionDate: transactionDate,
                             comment: comment,
                             createdAt: createdAt,
-                            updatedAt: updatedAt,)
+                            updatedAt: updatedAt)
     }
 }
