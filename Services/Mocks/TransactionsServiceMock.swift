@@ -10,8 +10,8 @@ import Foundation
 final class TransactionsServiceMock: TransactionsProtocol {
     
     private var mockTransactions: [Transaction] = [
-        Transaction(id: 1, accountId: 1, categoryId: 1, amount: 100, transactionDate: Date.now, comment: "first transaction", createdAt: Date.now, updatedAt: Date.now),
-        Transaction(id: 2, accountId: 1, categoryId: 2, amount: 2000, transactionDate: Date.now, comment: "second transaction", createdAt: Date.now, updatedAt: Date.now),
+        Transaction(id: 1, accountId: 1, categoryId: 1, amount: 100, transactionDate: Date.now, comment: "first transaction", createdAt: Date.now, updatedAt: Date.now.addingTimeInterval(-7200)),
+        Transaction(id: 2, accountId: 1, categoryId: 2, amount: 20000, transactionDate: Date.now, comment: "second transaction", createdAt: Date.now, updatedAt: Date.now.addingTimeInterval(-3600)),
         Transaction(id: 3, accountId: 1, categoryId: 3, amount: 3000, transactionDate: Date.now, comment: "third transaction", createdAt: Date.now, updatedAt: Date.now),
     ]
     

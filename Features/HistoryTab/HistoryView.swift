@@ -48,12 +48,12 @@ struct HistoryView: View {
                             Spacer()
                             
                             DatePicker(selection: $viewModel.dayStart, in: ...maximumDate, displayedComponents: .date) {}
-                                .onChange(of: viewModel.dayEnd) {
+                                .onChange(of: viewModel.dayStart) {
                                     if viewModel.dayEnd < viewModel.dayStart {
                                         guard let date = Calendar.current.date(byAdding: dayLength, to: viewModel.dayStart) else {
                                             fatalError("Cannot get end of the day date")
                                         }
-                                        viewModel.dayEnd = viewModel.dayStart
+                                        viewModel.dayEnd = date
                                     }
                                     Task {
                                         await viewModel.loadTransactions()
@@ -75,6 +75,16 @@ struct HistoryView: View {
                                     }
                                 }
                                 .background(Color.activeTab.opacity(0.1))
+                        }
+                        VStack (alignment: .leading) {
+                            Text("Выберите метод сортировки")
+                                .font(.callout)
+                            Picker("Выберите метод сортировки", selection: $viewModel.sortOption) {
+                                ForEach(TransactionSortOption.allCases, id: \.self) {
+                                    Text("\($0.rawValue)")
+                                }
+                            }
+                            .pickerStyle(.segmented)
                         }
                         HStack {
                             Text("Сумма")

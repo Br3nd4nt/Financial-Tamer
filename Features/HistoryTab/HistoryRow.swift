@@ -40,7 +40,7 @@ struct HistoryRow: View {
             
             VStack {
                 Text(transaction.amount.formattedWithSeparator(currencySymbol: "₽"))
-                Text(transaction.updatedAt.timeString(format: .twentyFour))
+                Text(transaction.transactionDate.timeString(format: .twentyFour))
             }
             
             Image(systemName: "chevron.right")

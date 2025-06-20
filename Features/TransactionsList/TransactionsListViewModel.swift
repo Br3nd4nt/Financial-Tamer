@@ -9,7 +9,15 @@ import Foundation
 
 @MainActor
 class TransactionsListViewModel: ObservableObject {
+    
     @Published var transactionRows: [TransactionRowModel] = []
+    
+    @Published var sortOption: TransactionSortOption = .byDate {
+        didSet {
+            transactionRows.sort(by: sortTransactions)
+        }
+    }
+    
     private var rawTransactions: [Transaction] = []
     private var rawCategories: [Category] = []
     
@@ -70,5 +78,19 @@ class TransactionsListViewModel: ObservableObject {
         }
         
         self.transactionRows = rows
+    }
+    
+    enum SortOption: String, CaseIterable {
+        case byDate = "По дате"
+        case byAmount = "По сумме"
+    }
+    
+    private func sortTransactions(_ lhs: TransactionRowModel, _ rhs: TransactionRowModel) -> Bool {
+        switch sortOption {
+            case .byDate:
+                return lhs.transaction.transactionDate > rhs.transaction.transactionDate
+            case .byAmount:
+                return lhs.transaction.amount > rhs.transaction.amount
+        }
     }
 }

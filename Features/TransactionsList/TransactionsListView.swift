@@ -32,6 +32,16 @@ struct TransactionsListView: View {
                 
                 List {
                     Section {
+                        VStack (alignment: .leading) {
+                            Text("Выберите метод сортировки")
+                                .font(.callout)
+                            Picker("Выберите метод сортировки", selection: $viewModel.sortOption) {
+                                ForEach(TransactionSortOption.allCases, id: \.self) {
+                                    Text("\($0.rawValue)")
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                        }
                         HStack {
                             Text("Всего")
                             Spacer()

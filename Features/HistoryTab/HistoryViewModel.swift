@@ -19,6 +19,12 @@ class HistoryViewModel: ObservableObject {
         didSet { reloadData() }
     }
     
+    @Published var sortOption: TransactionSortOption = .byDate {
+        didSet {
+            transactionRows.sort(by: sortTransactions)
+        }
+    }
+    
     private var rawTransactions: [Transaction] = []
     private var rawCategories: [Category] = []
     
@@ -78,9 +84,18 @@ class HistoryViewModel: ObservableObject {
     }
     
     private func reloadData() {
-        print("reloaded")
         Task {
             await loadTransactions()
+            transactionRows.sort(by: sortTransactions)
+        }
+    }
+    
+    private func sortTransactions(_ lhs: TransactionRowModel, _ rhs: TransactionRowModel) -> Bool {
+        switch sortOption {
+            case .byDate:
+                return lhs.transaction.transactionDate > rhs.transaction.transactionDate
+            case .byAmount:
+                return lhs.transaction.amount > rhs.transaction.amount
         }
     }
     
