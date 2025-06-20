@@ -47,8 +47,6 @@ struct TransactionRow: View {
     }
 }
 
-extension Transaction: Identifiable {}
-
 #Preview {
     struct PreviewWrapper: View {
         private var categories: [Category] = [

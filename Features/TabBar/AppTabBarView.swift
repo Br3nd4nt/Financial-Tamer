@@ -14,10 +14,12 @@ struct AppTabBarView: View {
                 .tabItem {
                     Label("Расходы", systemImage: "chart.line.downtrend.xyaxis")
                 }
+                .tint(.accent)
             TransactionsListView(direction: .income)
                 .tabItem {
                     Label("Доходы", systemImage: "chart.line.uptrend.xyaxis")
                 }
+                .tint(.accent)
             Text("Счет")
                 .tabItem {
                     Label("Счет", systemImage: "chart.line.text.clipboard")
@@ -31,5 +33,6 @@ struct AppTabBarView: View {
                     Label("Настройки", systemImage: "gearshape.2")
                 }
         }
+        .tint(.activeTab)
     }
 }

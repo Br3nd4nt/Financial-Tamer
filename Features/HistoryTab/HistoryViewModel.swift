@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 @MainActor
-class HistoryModelView: ObservableObject {
+class HistoryViewModel: ObservableObject {
     @Published var transactionRows: [TransactionRowModel] = []
     @Published var dayStart: Date {
         didSet { reloadData() }

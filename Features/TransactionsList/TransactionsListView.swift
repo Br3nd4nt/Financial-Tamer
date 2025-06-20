@@ -11,6 +11,8 @@ struct TransactionsListView: View {
     
     @StateObject private var viewModel: TransactionsListViewModel
     
+    @State private var showHistoryView = false
+    
     private let direction: Direction
     
     init(direction: Direction) {
@@ -47,15 +49,16 @@ struct TransactionsListView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
-                        print("History pressed from \(direction)")
+                        showHistoryView = true
                     }) {
                         Image(systemName: "clock")
                             .font(.headline)
                             .padding(8)
-                            .foregroundColor(.customPurple)
-                            .clipShape(Circle())
                     }
                 }
+            }
+            .navigationDestination(isPresented: $showHistoryView) {
+                HistoryView(direction: direction)
             }
         }
         .task {
