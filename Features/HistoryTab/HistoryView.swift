@@ -1,0 +1,102 @@
+//
+//  HistoryView.swift
+//  Financial Tamer
+//
+//  Created by br3nd4nt on 20.06.2025.
+//
+
+import SwiftUI
+
+struct HistoryView: View {
+    
+    @StateObject private var viewModel: HistoryViewModel
+    
+    private let direction: Direction
+    private let maximumDate: Date
+    
+    init(direction: Direction) {
+        self.direction = direction
+        
+        let dayStart: Date = Calendar.current.startOfDay(for: Date())
+        let dayEnd: Date = {
+            guard let date = Calendar.current.date(byAdding: DateComponents(day: 1, second: -1), to: Calendar.current.startOfDay(for: Date())) else {
+                fatalError("Cannot get end of the day date")
+            }
+            return date
+        }()
+        
+        maximumDate = dayEnd
+        
+        _viewModel = StateObject(
+            wrappedValue: HistoryViewModel(direction: direction, startDate: dayStart, endDate: dayEnd)
+        )
+    }
+    
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Моя история")
+                    .font(.largeTitle)
+                    .bold()
+                    .padding(.horizontal)
+                
+                List {
+                    Section {
+                        HStack {
+                            Text("Начало")
+                            Spacer()
+                            
+                            DatePicker(selection: $viewModel.dayStart, in: ...maximumDate, displayedComponents: .date) {}
+                                .onChange(of: viewModel.dayEnd) {
+                                    Task {
+                                        await viewModel.loadTransactions()
+                                    }
+                                }
+                                .background(Color.activeTab.opacity(0.1))
+                        }
+                        HStack {
+                            Text("Конец")
+                            Spacer()
+                            
+                            DatePicker(selection: $viewModel.dayEnd, in: ...maximumDate, displayedComponents: .date) {}
+                                .onChange(of: viewModel.dayEnd) {
+                                    Task {
+                                        await viewModel.loadTransactions()
+                                    }
+                                }
+                                .background(Color.activeTab.opacity(0.1))
+                        }
+                        HStack {
+                            Text("Сумма")
+                            Spacer()
+                            Text(viewModel.total.formattedWithSeparator(currencySymbol: "₽"))
+                        }
+                    }
+                    Section("Операции") {
+                        ForEach(viewModel.transactionRows) { row in
+                            HistoryRow(transaction: row.transaction, category: row.category)
+                        }
+                    }
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {}) {
+                        Image(systemName: "document")
+                            .font(.headline)
+                            .padding(8)
+                    }
+                }
+            }
+            .task {
+                await viewModel.loadTransactions()
+            }
+        }
+    }
+}
+
+
+#Preview {
+    HistoryView(direction: .outcome)
+}

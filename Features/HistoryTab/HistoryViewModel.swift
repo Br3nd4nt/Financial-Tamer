@@ -1,15 +1,24 @@
 //
-//  TransactionsListViewModel.swift
+//  HistoryModelView.swift
 //  Financial Tamer
 //
-//  Created by br3nd4nt on 20.06.2025.
+//  Created by br3nd4nt on 21.06.2025.
 //
 
 import Foundation
+import SwiftUI
 
 @MainActor
-class TransactionsListViewModel: ObservableObject {
+class HistoryModelView: ObservableObject {
     @Published var transactionRows: [TransactionRowModel] = []
+    @Published var dayStart: Date {
+        didSet { reloadData() }
+    }
+        
+    @Published var dayEnd: Date {
+        didSet { reloadData() }
+    }
+    
     private var rawTransactions: [Transaction] = []
     private var rawCategories: [Category] = []
     
@@ -18,13 +27,7 @@ class TransactionsListViewModel: ObservableObject {
     private let transactionsProtocol: TransactionsProtocol
     private let categoriesProtocol: CategoriesProtocol
     
-    private var dayStart: Date = Calendar.current.startOfDay(for: Date())
-    private var dayEnd: Date = {
-        guard let date = Calendar.current.date(byAdding: DateComponents(day: 1, second: -1), to: Calendar.current.startOfDay(for: Date())) else {
-            fatalError("Cannot get end of the day date")
-        }
-        return date
-    }()
+    
     
     var total: Decimal {
         transactionRows.reduce(0) { result, row in
@@ -36,10 +39,12 @@ class TransactionsListViewModel: ObservableObject {
         }
     }
     
-    init(direction: Direction, transactionsProtocol: TransactionsProtocol = TransactionsServiceMock(), categoriesProtocol: CategoriesProtocol = CategoriesServiceMock()) {
+    init(direction: Direction, startDate: Date, endDate: Date, transactionsProtocol: TransactionsProtocol = TransactionsServiceMock(), categoriesProtocol: CategoriesProtocol = CategoriesServiceMock()) {
         self.direction = direction
         self.transactionsProtocol = transactionsProtocol
         self.categoriesProtocol = categoriesProtocol
+        self.dayStart = startDate
+        self.dayEnd = endDate
     }
     
     func loadTransactions() async {
@@ -71,4 +76,12 @@ class TransactionsListViewModel: ObservableObject {
         
         self.transactionRows = rows
     }
+    
+    private func reloadData() {
+        print("reloaded")
+        Task {
+            await loadTransactions()
+        }
+    }
+    
 }
