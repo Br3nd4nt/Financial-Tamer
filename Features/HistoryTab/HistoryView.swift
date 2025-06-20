@@ -13,6 +13,7 @@ struct HistoryView: View {
     
     private let direction: Direction
     private let maximumDate: Date
+    private let dayLength: DateComponents = DateComponents(day: 1, second: -1)
     
     init(direction: Direction) {
         self.direction = direction
@@ -48,6 +49,12 @@ struct HistoryView: View {
                             
                             DatePicker(selection: $viewModel.dayStart, in: ...maximumDate, displayedComponents: .date) {}
                                 .onChange(of: viewModel.dayEnd) {
+                                    if viewModel.dayEnd < viewModel.dayStart {
+                                        guard let date = Calendar.current.date(byAdding: dayLength, to: viewModel.dayStart) else {
+                                            fatalError("Cannot get end of the day date")
+                                        }
+                                        viewModel.dayEnd = viewModel.dayStart
+                                    }
                                     Task {
                                         await viewModel.loadTransactions()
                                     }
@@ -60,6 +67,9 @@ struct HistoryView: View {
                             
                             DatePicker(selection: $viewModel.dayEnd, in: ...maximumDate, displayedComponents: .date) {}
                                 .onChange(of: viewModel.dayEnd) {
+                                    if viewModel.dayEnd < viewModel.dayStart {
+                                        viewModel.dayStart = Calendar.current.startOfDay(for: viewModel.dayEnd)
+                                    }
                                     Task {
                                         await viewModel.loadTransactions()
                                     }
