@@ -22,9 +22,9 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		068636122DF74110001F2E7F /* Financial Tamer */ = {
+		068636122DF74110001F2E7F /* App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Financial Tamer";
+			path = App;
 			sourceTree = "<group>";
 		};
 		068636252DF7413F001F2E7F /* Unit Tests */ = {
@@ -45,6 +45,11 @@
 		0686362F2DF74180001F2E7F /* Services */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Services;
+			sourceTree = "<group>";
+		};
+		06B2C44D2E054EB90080370B /* Features */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Features;
 			sourceTree = "<group>";
 		};
 		06EEA1AE2E047FE000FE176B /* Utils */ = {
@@ -75,12 +80,13 @@
 		068636072DF74110001F2E7F = {
 			isa = PBXGroup;
 			children = (
-				0686362F2DF74180001F2E7F /* Services */,
-				0686362E2DF7417A001F2E7F /* Extensions */,
+				06B2C44D2E054EB90080370B /* Features */,
 				0686362D2DF74167001F2E7F /* Models */,
-				068636122DF74110001F2E7F /* Financial Tamer */,
-				068636252DF7413F001F2E7F /* Unit Tests */,
+				068636122DF74110001F2E7F /* App */,
+				0686362F2DF74180001F2E7F /* Services */,
 				06EEA1AE2E047FE000FE176B /* Utils */,
+				0686362E2DF7417A001F2E7F /* Extensions */,
+				068636252DF7413F001F2E7F /* Unit Tests */,
 				068636112DF74110001F2E7F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -110,10 +116,11 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				068636122DF74110001F2E7F /* Financial Tamer */,
+				068636122DF74110001F2E7F /* App */,
 				0686362D2DF74167001F2E7F /* Models */,
 				0686362E2DF7417A001F2E7F /* Extensions */,
 				0686362F2DF74180001F2E7F /* Services */,
+				06B2C44D2E054EB90080370B /* Features */,
 				06EEA1AE2E047FE000FE176B /* Utils */,
 			);
 			name = "Financial Tamer";
