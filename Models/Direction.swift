@@ -6,6 +6,6 @@
 //
 
 enum Direction: String {
-    case income
-    case outcome
+    case income = "Доход"
+    case outcome = "Расход"
 }

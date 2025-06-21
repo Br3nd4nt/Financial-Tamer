@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Transaction {
+struct Transaction: Identifiable {
     let id: Int
     let accountId: Int
     let categoryId: Int

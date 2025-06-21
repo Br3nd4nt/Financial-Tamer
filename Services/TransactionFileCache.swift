@@ -15,11 +15,6 @@ final class TransactionFileCache {
     init(filename: String) {
         self.filename = filename
         
-        let doccumentsDirectory = FileManager.default.urls(
-            for: .documentDirectory,
-            in: .userDomainMask
-        ).first
-        
         guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
             fatalError("Could not find documents directory")
         }
