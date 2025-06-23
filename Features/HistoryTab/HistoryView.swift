@@ -21,7 +21,8 @@ struct HistoryView: View {
         let dayStart: Date = Calendar.current.startOfDay(for: Date())
         let dayEnd: Date = {
             guard let date = Calendar.current.date(byAdding: DateComponents(day: 1, second: -1), to: Calendar.current.startOfDay(for: Date())) else {
-                fatalError("Cannot get end of the day date")
+                print("Failed to create a date")
+                return Date()
             }
             return date
         }()
@@ -40,27 +41,33 @@ struct HistoryView: View {
                     .font(.largeTitle)
                     .bold()
                     .padding(.horizontal)
+                    .navigationTitle("Моя история")
                 
                 List {
                     Section {
                         HStack {
                             Text("Начало")
                             Spacer()
-                            
-                            DatePicker(selection: $viewModel.dayStart, in: ...maximumDate, displayedComponents: .date) {}
-                                .onChange(of: viewModel.dayStart) {
-                                    if viewModel.dayEnd < viewModel.dayStart {
-                                        guard let date = Calendar.current.date(byAdding: dayLength, to: viewModel.dayStart) else {
-                                            fatalError("Cannot get end of the day date")
+//                                RoundedRectangle(cornerRadius: 5)
+                                DatePicker(selection: $viewModel.dayStart, in: ...maximumDate, displayedComponents: .date) {}
+                                    .onChange(of: viewModel.dayStart) {
+                                        if viewModel.dayEnd < viewModel.dayStart {
+                                            guard let date = Calendar.current.date(byAdding: dayLength, to: viewModel.dayStart) else {
+                                                print("Failed to create a date")
+                                                return // TODO: ???
+                                            }
+                                            viewModel.dayEnd = date
                                         }
-                                        viewModel.dayEnd = date
+                                        Task {
+                                            await viewModel.loadTransactions()
+                                        }
                                     }
-                                    Task {
-                                        await viewModel.loadTransactions()
-                                    }
-                                }
-                                .background(Color.activeTab.opacity(0.1))
+                                    .background(
+                                            Color.activeTab.opacity(0.1)
+                                                .clipShape(RoundedRectangle(cornerRadius: 10)) //TODO: redo this
+                                        )
                         }
+                        
                         HStack {
                             Text("Конец")
                             Spacer()
@@ -74,7 +81,10 @@ struct HistoryView: View {
                                         await viewModel.loadTransactions()
                                     }
                                 }
-                                .background(Color.activeTab.opacity(0.1))
+                                .background(
+                                        Color.activeTab.opacity(0.1)
+                                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                                    )
                         }
                         VStack (alignment: .leading) {
                             Text("Выберите метод сортировки")

@@ -42,11 +42,12 @@ struct HistoryRow: View {
                 Text(transaction.amount.formattedWithSeparator(currencySymbol: "₽"))
                 Text(transaction.transactionDate.timeString(format: .twentyFour))
             }
-            
-            Image(systemName: "chevron.right")
+            NavigationLink("") { //TODO: change later
+                Image(systemName: "chevron.right")
                     .font(.system(size: 13, weight: .bold))
                     .foregroundColor(.secondary)
                     .padding(.leading, 8)
+            }
         }
     }
 }

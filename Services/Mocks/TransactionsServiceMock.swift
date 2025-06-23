@@ -50,7 +50,7 @@ final class TransactionsServiceMock: TransactionsProtocol {
             accountId: 1,
             categoryId: 3,
             amount: 75_000,
-            transactionDate: .create(day: 17, month: 6, year: 2025),
+            transactionDate: .create(day: 23, month: 6, year: 2025),
             comment: "Аренда за июль",
             createdAt: .now,
             updatedAt: .now
@@ -84,7 +84,7 @@ final class TransactionsServiceMock: TransactionsProtocol {
             accountId: 1,
             categoryId: 5,
             amount: 3_800,
-            transactionDate: .create(day: 18, month: 6, year: 2025, hour: 11),
+            transactionDate: .create(day: 23, month: 6, year: 2025, hour: 11),
             comment: "Корм для Джэка",
             createdAt: .now,
             updatedAt: .now

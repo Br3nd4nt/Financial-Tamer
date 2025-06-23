@@ -29,7 +29,8 @@ class TransactionsListViewModel: ObservableObject {
     private var dayStart: Date = Calendar.current.startOfDay(for: Date())
     private var dayEnd: Date = {
         guard let date = Calendar.current.date(byAdding: DateComponents(day: 1, second: -1), to: Calendar.current.startOfDay(for: Date())) else {
-            fatalError("Cannot get end of the day date")
+            print("Failled to get tomorrow date")
+            return Date()
         }
         return date
     }()
@@ -52,14 +53,16 @@ class TransactionsListViewModel: ObservableObject {
     
     func loadTransactions() async {
         guard let loadedCategories = try? await categoriesProtocol.getCategories() else {
-            fatalError("Failed to load categories")
+            print("Fairled to load categories")
+            return
         }
         
         self.rawCategories = loadedCategories
         
         
         guard let loadedTransactions = try? await transactionsProtocol.getTransactionsInTimeFrame(userId: 1, startDate: dayStart, endDate: dayEnd) else {
-            fatalError("Failed to load transactions")
+            print("Fairled to load transactions")
+            return
         }
         
         self.rawTransactions = loadedTransactions

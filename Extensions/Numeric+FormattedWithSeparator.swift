@@ -9,15 +9,19 @@ import Foundation
 
 extension Numeric {
     func formattedWithSeparator(currencySymbol: String = "₽") -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.groupingSeparator = " "
-        formatter.maximumFractionDigits = 0
-        
         if let number = self as? NSNumber,
-           let formatted = formatter.string(from: number) {
+           let formatted = separatorFormatter.string(from: number) {
             return "\(formatted) \(currencySymbol)"
         }
         return "\(self) \(currencySymbol)"
     }
 }
+
+// static не получается в extension засунуть, поэтому вот так
+public let separatorFormatter: NumberFormatter = {
+    let formatter = NumberFormatter()
+    formatter.numberStyle = .decimal
+    formatter.groupingSeparator = " "
+    formatter.maximumFractionDigits = 0
+    return formatter
+}()

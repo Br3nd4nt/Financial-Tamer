@@ -55,14 +55,16 @@ class HistoryViewModel: ObservableObject {
     
     func loadTransactions() async {
         guard let loadedCategories = try? await categoriesProtocol.getCategories() else {
-            fatalError("Failed to load categories")
+            print("Failed to load categories")
+            return
         }
         
         self.rawCategories = loadedCategories
         
         
         guard let loadedTransactions = try? await transactionsProtocol.getTransactionsInTimeFrame(userId: 1, startDate: dayStart, endDate: dayEnd) else {
-            fatalError("Failed to load transactions")
+            print("Failed to load transactions")
+            return
         }
         
         self.rawTransactions = loadedTransactions
