@@ -12,16 +12,12 @@ final class TransactionFileCache {
     private let filename: String
     private let fileURL: URL
     
-    init(filename: String) {
+    init?(filename: String) {
         self.filename = filename
         
-        let doccumentsDirectory = FileManager.default.urls(
-            for: .documentDirectory,
-            in: .userDomainMask
-        ).first
-        
         guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            fatalError("Could not find documents directory")
+            print("Could not find documents directory")
+            return nil
         }
         
         self.fileURL = documentsDirectory.appendingPathComponent(filename)
