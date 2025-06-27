@@ -18,7 +18,7 @@ class BalanceViewModel: ObservableObject {
     @Published var state: State = .viewing
     
     private let bankAccountsService: BankAccountsProtocol
-    private let userId: Int = 1 // For now, static user id
+    private let userId: Int = 1
     
     init(bankAccountsService: BankAccountsProtocol = BankAccountsServiceMock()) {
         self.bankAccountsService = bankAccountsService
@@ -45,7 +45,7 @@ class BalanceViewModel: ObservableObject {
     
     @MainActor
     func refreshAccount() async {
-        try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second delay for demonstration
+        try? await Task.sleep(nanoseconds: 1_000_000_000) // just simulation of waiting for server response
         await loadAccount()
     }
     

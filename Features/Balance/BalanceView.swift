@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct BalanceView: View {
     @StateObject private var viewModel = BalanceViewModel()
@@ -48,7 +49,6 @@ struct BalanceView: View {
                                         TextField("Баланс", text: $balanceInput)
                                             .keyboardType(.decimalPad)
                                             .focused($isBalanceFieldFocused)
-                                            .multilineTextAlignment(.trailing)
                                             .onAppear {
                                                 balanceInput = String(describing: account.balance)
                                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -56,8 +56,10 @@ struct BalanceView: View {
                                                 }
                                             }
                                             .onChange(of: balanceInput) { oldValue, newValue in
-                                                let filtered = newValue.replacingOccurrences(of: ",", with: ".")
-                                                    .replacingOccurrences(of: " ", with: "")
+                                                let filtered = newValue.filter { "0123456789.".contains($0) }
+                                                if filtered != newValue {
+                                                    balanceInput = filtered
+                                                }
                                                 if let newDecimal = Decimal(string: filtered) {
                                                     let updated = BankAccount(id: account.id, userId: account.userId, name: account.name, balance: newDecimal, currency: account.currency, createdAt: account.createdAt, updatedAt: account.updatedAt)
                                                     viewModel.account = updated
@@ -169,19 +171,6 @@ struct BalanceView: View {
                 spoilerIsOn = false
             }
         }
-    }
-}
-
-private extension Decimal {
-    func formatted() -> String {
-        // Always use dot as decimal separator for editing, no grouping
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = 2
-        formatter.minimumFractionDigits = 0
-        formatter.decimalSeparator = "."
-        formatter.usesGroupingSeparator = false
-        return formatter.string(for: self) ?? ""
     }
 }
 
