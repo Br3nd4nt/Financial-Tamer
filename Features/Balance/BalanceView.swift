@@ -13,6 +13,8 @@ struct BalanceView: View {
     @FocusState private var isBalanceFieldFocused: Bool
     @State private var balanceInput: String = ""
     
+    @State private var spoilerIsOn = true
+    
     private let currencyOptions: [(symbol: String, name: String, code: String)] = [
         ("₽", "Российский рубль ₽", "RUB"),
         ("$", "Американский доллар $", "USD"),
@@ -65,6 +67,7 @@ struct BalanceView: View {
                                             .transition(.opacity)
                                     } else {
                                         Text(account.balance.formattedWithSeparator(currencySymbol: displayCurrencySymbol(for: account.currency)))
+                                            .spoiler(isOn: $spoilerIsOn)
                                             .transition(.opacity)
                                     }
                                 }
@@ -161,6 +164,9 @@ struct BalanceView: View {
                 if newState == .viewing {
                     isBalanceFieldFocused = false
                 }
+            }
+            .onShake {
+                spoilerIsOn = false
             }
         }
     }

@@ -44,6 +44,9 @@ struct AppTabBarView: View {
                 }
                 .tag(Tab.settings)
         }
-        .tint(.activeTab)
+        .tint(.activeTab) 
+        .onShake {
+            print("Device shaken!")
+        }
     }
 }
