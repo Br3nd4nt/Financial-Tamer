@@ -59,6 +59,7 @@ struct BalanceView: View {
                                                 if let newDecimal = Decimal(string: filtered) {
                                                     let updated = BankAccount(id: account.id, userId: account.userId, name: account.name, balance: newDecimal, currency: account.currency, createdAt: account.createdAt, updatedAt: account.updatedAt)
                                                     viewModel.account = updated
+                                                    Task { await viewModel.updateAccount(updated) }
                                                 }
                                             }
                                             .transition(.opacity)
@@ -116,6 +117,11 @@ struct BalanceView: View {
                             }
                         }
                 )
+                .refreshable {
+                    if viewModel.state == .viewing {
+                        await viewModel.refreshAccount()
+                    }
+                }
             }
             .confirmationDialog("Валюта", isPresented: $showCurrencyMenu, titleVisibility: .visible) {
                 ForEach(currencyOptions, id: \.symbol) { option in
@@ -123,6 +129,7 @@ struct BalanceView: View {
                         if var account = viewModel.account {
                             account = BankAccount(id: account.id, userId: account.userId, name: account.name, balance: account.balance, currency: option.symbol, createdAt: account.createdAt, updatedAt: account.updatedAt)
                             viewModel.account = account
+                            Task { await viewModel.updateAccount(account) }
                         }
                     }
                 }

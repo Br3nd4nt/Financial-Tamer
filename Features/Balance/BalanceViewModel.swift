@@ -42,4 +42,20 @@ class BalanceViewModel: ObservableObject {
     func toggleState() {
         state = (state == .viewing) ? .redacting : .viewing
     }
+    
+    @MainActor
+    func refreshAccount() async {
+        try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second delay for demonstration
+        await loadAccount()
+    }
+    
+    @MainActor
+    func updateAccount(_ updated: BankAccount) async {
+        do {
+            let newAccount = try await bankAccountsService.updateBankAccount(userId: userId, newAccount: updated)
+            self.account = newAccount
+        } catch {
+            print("Failed to update bank account: \(error)")
+        }
+    }
 }
