@@ -23,8 +23,8 @@ struct TransactionsListView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 16) {
-                Text(direction == .income ? "Доходы сегодня" : "Расходы сегодня")
+            VStack(alignment: .leading, spacing: Constants.vStackSpacing) {
+                Text(direction == .income ? Constants.incomeToday : Constants.outcomeToday)
                     .font(.largeTitle)
                     .bold()
                     .padding(.horizontal)
@@ -32,9 +32,9 @@ struct TransactionsListView: View {
                 List {
                     Section {
                         VStack(alignment: .leading) {
-                            Text("Выберите метод сортировки")
+                            Text(Constants.sortTitle)
                                 .font(.callout)
-                            Picker("Выберите метод сортировки", selection: $viewModel.sortOption) {
+                            Picker(Constants.sortTitle, selection: $viewModel.sortOption) {
                                 ForEach(TransactionSortOption.allCases, id: \.self) {
                                     Text("\($0.rawValue)")
                                 }
@@ -42,12 +42,12 @@ struct TransactionsListView: View {
                             .pickerStyle(.segmented)
                         }
                         HStack {
-                            Text("Всего")
+                            Text(Constants.totalTitle)
                             Spacer()
-                            Text(viewModel.total.formattedWithSeparator(currencySymbol: "₽"))
+                            Text(viewModel.total.formattedWithSeparator(currencySymbol: Constants.currencySymbol))
                         }
                     }
-                    Section("Операции") {
+                    Section(Constants.operationsTitle) {
                         ForEach(viewModel.transactionRows) { row in
                             TransactionRow(transaction: row.transaction, category: row.category)
                         }
@@ -62,9 +62,9 @@ struct TransactionsListView: View {
                             showHistoryView = true
                         },
                         label: {
-                            Image(systemName: "clock")
+                            Image(systemName: Constants.toolbarIcon)
                                 .font(.headline)
-                                .padding(8)
+                                .padding(Constants.toolbarIconPadding)
                         }
                     )
                 }
@@ -76,6 +76,18 @@ struct TransactionsListView: View {
         .task {
             await viewModel.loadTransactions()
         }
+    }
+
+    private enum Constants {
+        static let incomeToday = "Доходы сегодня"
+        static let outcomeToday = "Расходы сегодня"
+        static let vStackSpacing: CGFloat = 16
+        static let sortTitle = "Выберите метод сортировки"
+        static let totalTitle = "Всего"
+        static let operationsTitle = "Операции"
+        static let currencySymbol = "₽"
+        static let toolbarIcon = "clock"
+        static let toolbarIconPadding: CGFloat = 8
     }
 }
 

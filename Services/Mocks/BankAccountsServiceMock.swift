@@ -8,6 +8,8 @@
 import Foundation
 
 final class BankAccountsServiceMock: BankAccountsProtocol {
+    static let shared = BankAccountsServiceMock()
+    private init() {}
     private var mockAccount = BankAccount(
         id: 1,
         userId: 1,

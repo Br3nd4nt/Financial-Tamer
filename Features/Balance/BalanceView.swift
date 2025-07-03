@@ -12,34 +12,34 @@ struct BalanceView: View {
     @StateObject private var viewModel = BalanceViewModel()
     @State private var showCurrencyMenu = false
     @FocusState private var isBalanceFieldFocused: Bool
-    @State private var balanceInput = ""
-
+    @State private var balanceInput: String = ""
+    
     @State private var spoilerIsOn = true
-
+    
     private func displayCurrencySymbol(for currency: String) -> String {
         Currency.allCases.first {
             $0.rawValue == currency || $0.symbol == currency
         }?.symbol ?? currency
     }
-
+    
     private var balanceRow: some View {
         HStack {
-            Text("Баланс")
+            Text(Constants.balanceTitle)
             Spacer()
             if let account = viewModel.account {
                 ZStack {
                     if viewModel.state == .redacting {
-                        TextField("Баланс", text: $balanceInput)
+                        TextField(Constants.balanceTitle, text: $balanceInput)
                             .keyboardType(.decimalPad)
                             .focused($isBalanceFieldFocused)
                             .onAppear {
                                 balanceInput = String(describing: account.balance)
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + Constants.balanceFieldFocusDelay) {
                                     isBalanceFieldFocused = true
                                 }
                             }
-                            .onChange(of: balanceInput) { _, newValue in
-                                let filtered = newValue.filter { "0123456789.".contains($0) }
+                            .onChange(of: balanceInput) { oldValue, newValue in
+                                let filtered = newValue.filter { Constants.decimalCharacters.contains($0) }
                                 if filtered != newValue {
                                     balanceInput = filtered
                                 }
@@ -59,7 +59,7 @@ struct BalanceView: View {
                             }
                             .transition(.opacity)
                     } else {
-                        Text(account.balance.formattedWithSeparator(currencySymbol: displayCurrencySymbol(for: account.currency)))
+                        Text(account.balance.formattedWithSeparator(currencySymbol: displayCurrencySymbol(account.currency)))
                             .spoiler(isOn: $spoilerIsOn)
                             .transition(.opacity)
                     }
@@ -78,16 +78,16 @@ struct BalanceView: View {
         .listRowBackground(viewModel.state == .viewing ? .activeTab : Color(.systemBackground))
         .animation(.default, value: viewModel.state)
     }
-
+    
     private var currencyRow: some View {
         HStack {
-            Text("Валюта")
+            Text(Constants.currencyTitle)
             Spacer()
             if let account = viewModel.account {
-                Text(displayCurrencySymbol(for: account.currency))
+                Text(displayCurrencySymbol(account.currency))
                 if viewModel.state == .redacting {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 13))
+                    Image(systemName: Constants.chevronRight)
+                        .font(.system(size: Constants.chevronFontSize))
                         .foregroundStyle(.secondary)
                         .transition(.opacity)
                 }
@@ -104,16 +104,16 @@ struct BalanceView: View {
         .listRowBackground(viewModel.state == .viewing ? .categoryBackground : Color(.systemBackground))
         .animation(.default, value: viewModel.state)
     }
-
+    
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 16) {
-                Text("Мой счёт")
+            VStack(alignment: .leading, spacing: Constants.vStackSpacing) {
+                Text(Constants.title)
                     .font(.largeTitle)
                     .bold()
                     .padding(.horizontal)
                     .padding(.top)
-
+                
                 List {
                     Section {
                         balanceRow
@@ -124,7 +124,7 @@ struct BalanceView: View {
                 }
                 .listStyle(.insetGrouped)
                 .simultaneousGesture(
-                    DragGesture(minimumDistance: 20, coordinateSpace: .local)
+                    DragGesture(minimumDistance: Constants.dragMinimumDistance, coordinateSpace: .local)
                         .onEnded { value in
                             if abs(value.translation.height) > abs(value.translation.width) {
                                 isBalanceFieldFocused = false
@@ -137,16 +137,25 @@ struct BalanceView: View {
                     }
                 }
             }
-            .confirmationDialog("Валюта", isPresented: $showCurrencyMenu, titleVisibility: .visible) {
+            .confirmationDialog(Constants.currencyTitle, isPresented: $showCurrencyMenu, titleVisibility: .visible, actions: {
                 ForEach(Currency.allCases, id: \.self) { option in
-                    Button(option.displayName) {
+                    Button(option.name) {
                         if var account = viewModel.account {
-                            account.currency = option.rawValue
+                            account = BankAccount(
+                                id: account.id,
+                                userId: account.userId,
+                                name: account.name,
+                                balance: account.balance,
+                                currency: option.symbol,
+                                createdAt: account.createdAt,
+                                updatedAt: account.updatedAt
+                            )
+                            viewModel.account = account
                             Task { await viewModel.updateAccount(account) }
                         }
                     }
                 }
-            }
+            })
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -160,7 +169,7 @@ struct BalanceView: View {
                             }
                         },
                         label: {
-                            Text(viewModel.state == .viewing ? "Редактировать" : "Сохранить")
+                            Text(viewModel.state == .viewing ? Constants.editButton : Constants.saveButton)
                         }
                     )
                 }
@@ -170,7 +179,7 @@ struct BalanceView: View {
                     await viewModel.loadAccount()
                 }
             }
-            .onChange(of: viewModel.state) { _, newState in
+            .onChange(of: viewModel.state) { oldState, newState in
                 if newState == .redacting, let account = viewModel.account {
                     balanceInput = String(describing: account.balance)
                 }
@@ -182,6 +191,20 @@ struct BalanceView: View {
                 spoilerIsOn = false
             }
         }
+    }
+
+    private enum Constants {
+        static let title = "Мой счёт"
+        static let vStackSpacing: CGFloat = 16
+        static let balanceTitle = "Баланс"
+        static let currencyTitle = "Валюта"
+        static let chevronRight = "chevron.right"
+        static let chevronFontSize: CGFloat = 13
+        static let editButton = "Редактировать"
+        static let saveButton = "Сохранить"
+        static let dragMinimumDistance: CGFloat = 20
+        static let balanceFieldFocusDelay: Double = 0.1
+        static let decimalCharacters = "0123456789."
     }
 }
 

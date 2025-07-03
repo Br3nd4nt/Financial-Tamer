@@ -16,38 +16,49 @@ struct HistoryRow: View {
             ZStack {
                 Circle()
                     .fill(.categoryBackground)
-                    .aspectRatio(1, contentMode: .fit)
+                    .aspectRatio(Constants.circleAspectRatio, contentMode: .fit)
                 Text("\(category.emoji)")
-                    .padding(6)
+                    .padding(Constants.emojiPadding)
             }
             .fixedSize(horizontal: true, vertical: true)
 
             if transaction.comment.isEmpty {
                 Text(category.name)
-                    .lineLimit(1)
+                    .lineLimit(Constants.lineLimit)
             } else {
                 VStack(alignment: .leading) {
                     Text(category.name)
-                        .lineLimit(1)
+                        .lineLimit(Constants.lineLimit)
                     Text(transaction.comment)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                        .lineLimit(Constants.lineLimit)
                 }
             }
             Spacer()
 
             VStack {
-                Text(transaction.amount.formattedWithSeparator(currencySymbol: "₽"))
+                Text(transaction.amount.formattedWithSeparator(currencySymbol: Constants.currencySymbol))
                 Text(transaction.transactionDate.timeString(format: .twentyFour))
             }
-            NavigationLink("") {
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .bold))
+            NavigationLink(Constants.emptyString) {
+                Image(systemName: Constants.chevronRight)
+                    .font(.system(size: Constants.chevronFontSize, weight: .bold))
                     .foregroundColor(.secondary)
-                    .padding(.leading, 8)
+                    .padding(.leading, Constants.chevronPadding)
             }
         }
+    }
+
+    private enum Constants {
+        static let circleAspectRatio: CGFloat = 1
+        static let emojiPadding: CGFloat = 6
+        static let lineLimit: Int = 1
+        static let currencySymbol = "₽"
+        static let chevronRight = "chevron.right"
+        static let chevronFontSize: CGFloat = 13
+        static let chevronPadding: CGFloat = 8
+        static let emptyString = ""
     }
 }
 
