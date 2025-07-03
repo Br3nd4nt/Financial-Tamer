@@ -12,16 +12,16 @@ struct BalanceView: View {
     @StateObject private var viewModel = BalanceViewModel()
     @State private var showCurrencyMenu = false
     @FocusState private var isBalanceFieldFocused: Bool
-    @State private var balanceInput: String = ""
-    
+    @State private var balanceInput = ""
+
     @State private var spoilerIsOn = true
-    
+
     private func displayCurrencySymbol(for currency: String) -> String {
         Currency.allCases.first {
             $0.rawValue == currency || $0.symbol == currency
         }?.symbol ?? currency
     }
-    
+
     private var balanceRow: some View {
         HStack {
             Text("Баланс")
@@ -78,7 +78,7 @@ struct BalanceView: View {
         .listRowBackground(viewModel.state == .viewing ? .activeTab : Color(.systemBackground))
         .animation(.default, value: viewModel.state)
     }
-    
+
     private var currencyRow: some View {
         HStack {
             Text("Валюта")
@@ -104,7 +104,7 @@ struct BalanceView: View {
         .listRowBackground(viewModel.state == .viewing ? .categoryBackground : Color(.systemBackground))
         .animation(.default, value: viewModel.state)
     }
-    
+
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 16) {
@@ -113,7 +113,7 @@ struct BalanceView: View {
                     .bold()
                     .padding(.horizontal)
                     .padding(.top)
-                
+
                 List {
                     Section {
                         balanceRow
@@ -142,7 +142,7 @@ struct BalanceView: View {
                     Button(option.displayName) {
                         if var account = viewModel.account {
                             account.currency = option.rawValue
-                            Task {await viewModel.updateAccount(account)}
+                            Task { await viewModel.updateAccount(account) }
                         }
                     }
                 }

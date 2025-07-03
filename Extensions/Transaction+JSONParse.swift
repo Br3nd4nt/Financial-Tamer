@@ -8,9 +8,8 @@
 import Foundation
 
 extension Transaction {
-
     var jsonObject: Any {
-        return [
+        [
             "id": id,
             "accountId": accountId,
             "categoryId": categoryId,
@@ -21,7 +20,7 @@ extension Transaction {
             "updatedAt": dateFormatter.string(from: updatedAt)
         ]
     }
-    
+
     static func parse(jsonObject: Any) -> Transaction? {
         guard let dictionary = jsonObject as? [String: Any],
             let id = dictionary["id"] as? Int,
@@ -37,14 +36,16 @@ extension Transaction {
             let updatedAt = dateFormatter.date(from: updatedAtString)
         else { return nil }
         let amount = Decimal(amountDouble)
-        
-        return Transaction(  id: id,
-                            accountId: accountId,
-                            categoryId: categoryId,
-                            amount: amount,
-                            transactionDate: transactionDate,
-                            comment: comment,
-                            createdAt: createdAt,
-                            updatedAt: updatedAt)
+
+        return Transaction(
+            id: id,
+            accountId: accountId,
+            categoryId: categoryId,
+            amount: amount,
+            transactionDate: transactionDate,
+            comment: comment,
+            createdAt: createdAt,
+            updatedAt: updatedAt
+        )
     }
 }

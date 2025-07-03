@@ -8,20 +8,19 @@
 import SwiftUI
 
 struct TransactionsListView: View {
-    
     @StateObject private var viewModel: TransactionsListViewModel
-    
+
     @State private var showHistoryView = false
-    
+
     private let direction: Direction
-    
+
     init(direction: Direction) {
         self.direction = direction
         _viewModel = StateObject(
             wrappedValue: TransactionsListViewModel(direction: direction)
         )
     }
-    
+
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 16) {
@@ -29,7 +28,7 @@ struct TransactionsListView: View {
                     .font(.largeTitle)
                     .bold()
                     .padding(.horizontal)
-                
+
                 List {
                     Section {
                         VStack(alignment: .leading) {

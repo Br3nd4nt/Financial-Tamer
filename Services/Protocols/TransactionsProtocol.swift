@@ -12,7 +12,6 @@ protocol TransactionsProtocol {
     func createTransaction(transaction: Transaction) async throws -> Transaction
     func updateTransaction(transaction: Transaction) async throws -> Transaction
     func deleteTransaction(id: Int) async throws
-    
 }
 
 enum TransactionServiceError: Error {

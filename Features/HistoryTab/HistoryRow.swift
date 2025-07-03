@@ -8,10 +8,9 @@
 import SwiftUI
 
 struct HistoryRow: View {
-    
     var transaction: Transaction
     var category: Category
-    
+
     var body: some View {
         HStack {
             ZStack {
@@ -22,7 +21,7 @@ struct HistoryRow: View {
                     .padding(6)
             }
             .fixedSize(horizontal: true, vertical: true)
-            
+
             if transaction.comment.isEmpty {
                 Text(category.name)
                     .lineLimit(1)
@@ -37,7 +36,7 @@ struct HistoryRow: View {
                 }
             }
             Spacer()
-            
+
             VStack {
                 Text(transaction.amount.formattedWithSeparator(currencySymbol: "₽"))
                 Text(transaction.transactionDate.timeString(format: .twentyFour))
@@ -91,14 +90,14 @@ struct HistoryRow: View {
                 updatedAt: Date.now
             )
         ]
-        
+
         var body: some View {
             List {
                 ForEach(Array(transactions.enumerated()), id: \.element.id) { index, transaction in
                     let category = categories.first { $0.id == transaction.categoryId }
-                    
+
                     Group {
-                        if let category = category {
+                        if let category {
                             HistoryRow(transaction: transactions[index], category: category)
                         } else {
                             HStack {
@@ -113,6 +112,6 @@ struct HistoryRow: View {
             }
         }
     }
-    
+
     return PreviewWrapper()
 }

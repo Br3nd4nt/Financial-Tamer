@@ -12,7 +12,7 @@ struct AppTabBarView: View {
         case outcome, income, balance, articles, settings
     }
     @State private var selectedTab: Tab = .balance
-    
+
     var body: some View {
         TabView(selection: $selectedTab) {
             TransactionsListView(direction: .outcome)
@@ -44,7 +44,7 @@ struct AppTabBarView: View {
                 }
                 .tag(Tab.settings)
         }
-        .tint(.activeTab) 
+        .tint(.activeTab)
         .onShake {
             print("Device shaken!")
         }

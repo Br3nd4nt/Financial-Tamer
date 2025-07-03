@@ -1,0 +1,68 @@
+# Xcode
+DerivedData/
+build/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.xcscmblueprint
+
+# SwiftPM
+.build/
+.swiftpm/xcode/package.xcworkspace/xcuserdata/
+
+# CocoaPods
+Pods/
+Podfile.lock
+project.xcworkspace
+
+# Carthage
+Carthage/Build/
+Carthage/Checkouts/
+Carthage/DerivedData/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# Archives
+*.xcarchive
+
+# App files
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Playground
+timeline.xctimeline
+playground.xcworkspace
+
+# Swift Package Manager
+Package.resolved
+
+# User settings
+*.moved-aside
+*.xcuserstate
+
+# IDE
+.idea/
+*.iml
+
+# macOS
+.DS_Store
+
+# Other
+*.swp
+*.lock
+*.tmp
+*.orig 
+
+# SwiftLint Remote Config Cache
+.swiftlint/RemoteConfigCache

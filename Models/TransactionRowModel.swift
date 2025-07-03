@@ -8,7 +8,7 @@
 struct TransactionRowModel: Identifiable {
     // объединяем Transaction и Category чтобы избежать сложностей при отображении
     // возможно стоит провести рефакторинг моделей в будущем
-    
+
     let transaction: Transaction
     let category: Category
     let id: Int

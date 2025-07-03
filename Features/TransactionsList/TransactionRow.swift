@@ -8,10 +8,9 @@
 import SwiftUI
 
 struct TransactionRow: View {
-    
     var transaction: Transaction
     var category: Category
-    
+
     var body: some View {
         HStack {
             ZStack {
@@ -22,7 +21,7 @@ struct TransactionRow: View {
                     .padding(6)
             }
             .fixedSize(horizontal: true, vertical: true)
-            
+
             if transaction.comment.isEmpty {
                 Text(category.name)
                     .lineLimit(1)
@@ -38,7 +37,7 @@ struct TransactionRow: View {
             }
             Spacer()
             Text(transaction.amount.formattedWithSeparator(currencySymbol: "₽"))
-            
+
             Image(systemName: "chevron.right")
                     .font(.system(size: 13, weight: .bold))
                     .foregroundColor(.secondary)
@@ -86,14 +85,14 @@ struct TransactionRow: View {
                 updatedAt: Date.now
             )
         ]
-        
+
         var body: some View {
                 List {
                     ForEach(Array(transactions.enumerated()), id: \.element.id) { index, transaction in
                         let category = categories.first { $0.id == transaction.categoryId }
-                        
+
                         Group {
-                            if let category = category {
+                            if let category {
                                 TransactionRow(transaction: transactions[index], category: category)
                             } else {
                                 HStack {
@@ -108,6 +107,6 @@ struct TransactionRow: View {
                 }
             }
     }
-    
+
     return PreviewWrapper()
 }

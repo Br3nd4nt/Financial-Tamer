@@ -8,16 +8,15 @@
 import SwiftUI
 
 struct HistoryView: View {
-    
     @StateObject private var viewModel: HistoryViewModel
-    
+
     private let direction: Direction
     private let maximumDate: Date
-    private let dayLength: DateComponents = DateComponents(day: 1, second: -1)
-    
+    private let dayLength = DateComponents(day: 1, second: -1)
+
     init(direction: Direction) {
         self.direction = direction
-        
+
         let dayStart: Date = Calendar.current.startOfDay(for: Date())
         let dayEnd: Date = {
             guard let date = Calendar.current.date(byAdding: DateComponents(day: 1, second: -1), to: Calendar.current.startOfDay(for: Date())) else {
@@ -26,14 +25,14 @@ struct HistoryView: View {
             }
             return date
         }()
-        
+
         maximumDate = dayEnd
-        
+
         _viewModel = StateObject(
             wrappedValue: HistoryViewModel(direction: direction, startDate: dayStart, endDate: dayEnd)
         )
     }
-    
+
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 16) {
@@ -42,7 +41,7 @@ struct HistoryView: View {
                     .bold()
                     .padding(.horizontal)
                     .navigationTitle("Моя история")
-                
+
                 List {
                     Section {
                         HStack {
@@ -66,11 +65,11 @@ struct HistoryView: View {
                                         .clipShape(RoundedRectangle(cornerRadius: 10))
                                 )
                         }
-                        
+
                         HStack {
                             Text("Конец")
                             Spacer()
-                            
+
                             DatePicker(selection: $viewModel.dayEnd, in: ...maximumDate, displayedComponents: .date) {}
                                 .onChange(of: viewModel.dayEnd) {
                                     if viewModel.dayEnd < viewModel.dayStart {
