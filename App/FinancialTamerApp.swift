@@ -6,10 +6,11 @@
 //
 
 import SwiftUI
+import UIKit
 
 @main
-struct Financial_TamerApp: App {
-
+struct FinancialTamerApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     var body: some Scene {
         WindowGroup {
             AppTabBarView()

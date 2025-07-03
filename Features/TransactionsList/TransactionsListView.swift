@@ -32,7 +32,7 @@ struct TransactionsListView: View {
                 
                 List {
                     Section {
-                        VStack (alignment: .leading) {
+                        VStack(alignment: .leading) {
                             Text("Выберите метод сортировки")
                                 .font(.callout)
                             Picker("Выберите метод сортировки", selection: $viewModel.sortOption) {
@@ -58,13 +58,16 @@ struct TransactionsListView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        showHistoryView = true
-                    }) {
-                        Image(systemName: "clock")
-                            .font(.headline)
-                            .padding(8)
-                    }
+                    Button(
+                        action: {
+                            showHistoryView = true
+                        },
+                        label: {
+                            Image(systemName: "clock")
+                                .font(.headline)
+                                .padding(8)
+                        }
+                    )
                 }
             }
             .navigationDestination(isPresented: $showHistoryView) {

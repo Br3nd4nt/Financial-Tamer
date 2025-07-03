@@ -5,14 +5,12 @@
 //  Created by br3nd4nt on 09.06.2025.
 //
 
-
 import Testing
 import Foundation
 
 @testable import Financial_Tamer
 
 struct TransactionParseUnitTests {
-    
     
     @Test func transactionJSONtoObject() async throws {
         let jsonObject: [String: Any] = [
@@ -45,7 +43,7 @@ struct TransactionParseUnitTests {
                                                    comment: "test comment",
                                                    createdAt: date,
                                                    updatedAt: date)
-        let object = try #require(transaction.jsonObject as? [String : Any])
+        let object = try #require(transaction.jsonObject as? [String: Any])
         #expect(object["id"] as? Int == 1)
         #expect(object["accountId"] as? Int == 1)
         #expect(object["categoryId"] as? Int == 1)

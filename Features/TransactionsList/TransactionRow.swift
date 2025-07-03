@@ -27,7 +27,7 @@ struct TransactionRow: View {
                 Text(category.name)
                     .lineLimit(1)
             } else {
-                VStack (alignment: .leading) {
+                VStack(alignment: .leading) {
                     Text(category.name)
                         .lineLimit(1)
                     Text(transaction.comment)
@@ -55,9 +55,36 @@ struct TransactionRow: View {
             Category(id: 3, name: "Pets", emoji: "🐶", direction: .outcome)
         ]
         private var transactions: [Transaction] = [
-            Transaction(id: 1, accountId: 1, categoryId: 1, amount: 100, transactionDate: Date.now, comment: "first transaction", createdAt: Date.now, updatedAt: Date.now),
-            Transaction(id: 2, accountId: 1, categoryId: 2, amount: 200, transactionDate: Date.now, comment: "second transaction", createdAt: Date.now, updatedAt: Date.now),
-            Transaction(id: 3, accountId: 1, categoryId: 3, amount: 3000, transactionDate: Date.now, comment: "", createdAt: Date.now, updatedAt: Date.now),
+            Transaction(
+                id: 1,
+                accountId: 1,
+                categoryId: 1,
+                amount: 100,
+                transactionDate: Date.now,
+                comment: "first transaction",
+                createdAt: Date.now,
+                updatedAt: Date.now
+            ),
+            Transaction(
+                id: 2,
+                accountId: 1,
+                categoryId: 2,
+                amount: 200,
+                transactionDate: Date.now,
+                comment: "second transaction",
+                createdAt: Date.now,
+                updatedAt: Date.now
+            ),
+            Transaction(
+                id: 3,
+                accountId: 1,
+                categoryId: 3,
+                amount: 3000,
+                transactionDate: Date.now,
+                comment: "",
+                createdAt: Date.now,
+                updatedAt: Date.now
+            )
         ]
         
         var body: some View {

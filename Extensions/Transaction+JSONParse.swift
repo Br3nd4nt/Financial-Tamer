@@ -18,7 +18,7 @@ extension Transaction {
             "transactionDate": dateFormatter.string(from: transactionDate),
             "comment": comment,
             "createdAt": dateFormatter.string(from: createdAt),
-            "updatedAt": dateFormatter.string(from: updatedAt),
+            "updatedAt": dateFormatter.string(from: updatedAt)
         ]
     }
     

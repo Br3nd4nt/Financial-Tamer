@@ -48,24 +48,23 @@ struct HistoryView: View {
                         HStack {
                             Text("Начало")
                             Spacer()
-//                                RoundedRectangle(cornerRadius: 5)
-                                DatePicker(selection: $viewModel.dayStart, in: ...maximumDate, displayedComponents: .date) {}
-                                    .onChange(of: viewModel.dayStart) {
-                                        if viewModel.dayEnd < viewModel.dayStart {
-                                            guard let date = Calendar.current.date(byAdding: dayLength, to: viewModel.dayStart) else {
-                                                print("Failed to create a date")
-                                                return // TODO: ???
-                                            }
-                                            viewModel.dayEnd = date
+                            DatePicker(selection: $viewModel.dayStart, in: ...maximumDate, displayedComponents: .date) {}
+                                .onChange(of: viewModel.dayStart) {
+                                    if viewModel.dayEnd < viewModel.dayStart {
+                                        guard let date = Calendar.current.date(byAdding: dayLength, to: viewModel.dayStart) else {
+                                            print("Failed to create a date")
+                                            return
                                         }
-                                        Task {
-                                            await viewModel.loadTransactions()
-                                        }
+                                        viewModel.dayEnd = date
                                     }
-                                    .background(
-                                            Color.activeTab.opacity(0.1)
-                                                .clipShape(RoundedRectangle(cornerRadius: 10)) //TODO: redo this
-                                        )
+                                    Task {
+                                        await viewModel.loadTransactions()
+                                    }
+                                }
+                                .background(
+                                    Color.activeTab.opacity(0.1)
+                                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                                )
                         }
                         
                         HStack {
@@ -82,11 +81,11 @@ struct HistoryView: View {
                                     }
                                 }
                                 .background(
-                                        Color.activeTab.opacity(0.1)
-                                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                                    )
+                                    Color.activeTab.opacity(0.1)
+                                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                                )
                         }
-                        VStack (alignment: .leading) {
+                        VStack(alignment: .leading) {
                             Text("Выберите метод сортировки")
                                 .font(.callout)
                             Picker("Выберите метод сортировки", selection: $viewModel.sortOption) {
@@ -112,11 +111,14 @@ struct HistoryView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {}) {
-                        Image(systemName: "document")
-                            .font(.headline)
-                            .padding(8)
-                    }
+                    Button(
+                        action: {},
+                        label: {
+                            Image(systemName: "document")
+                                .font(.headline)
+                                .padding(8)
+                        }
+                    )
                 }
             }
             .task {
@@ -125,7 +127,6 @@ struct HistoryView: View {
         }
     }
 }
-
 
 #Preview {
     HistoryView(direction: .outcome)
