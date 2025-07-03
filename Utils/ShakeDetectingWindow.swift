@@ -7,4 +7,4 @@ class ShakeDetectingWindow: UIWindow {
             NotificationCenter.default.post(name: .deviceDidShakeNotification, object: nil)
         }
     }
-} 
+}

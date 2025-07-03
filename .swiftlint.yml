@@ -1,0 +1,9 @@
+disabled_rules:
+  - trailing_whitespace
+opt_in_rules:
+  - empty_count
+line_length:
+  warning: 150
+  error: 200
+excluded:
+  - Pods  # Ignore dependencies

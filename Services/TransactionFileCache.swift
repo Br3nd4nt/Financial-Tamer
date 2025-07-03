@@ -66,7 +66,7 @@ final class TransactionFileCache {
         try data.write(to: fileURL, options: [.atomic])
     }
     
-    //MARK: Transaction Cache Errors
+    // MARK: Transaction Cache Errors
     enum CacheError: Error {
         case duplicateTransaction
         case transactionNotFound

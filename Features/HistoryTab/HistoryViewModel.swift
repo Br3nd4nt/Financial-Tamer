@@ -14,7 +14,7 @@ class HistoryViewModel: ObservableObject {
     @Published var dayStart: Date {
         didSet { reloadData() }
     }
-        
+    
     @Published var dayEnd: Date {
         didSet { reloadData() }
     }
@@ -33,8 +33,6 @@ class HistoryViewModel: ObservableObject {
     private let transactionsProtocol: TransactionsProtocol
     private let categoriesProtocol: CategoriesProtocol
     
-    
-    
     var total: Decimal {
         transactionRows.reduce(0) { result, row in
             if row.category.direction == direction {
@@ -45,7 +43,13 @@ class HistoryViewModel: ObservableObject {
         }
     }
     
-    init(direction: Direction, startDate: Date, endDate: Date, transactionsProtocol: TransactionsProtocol = TransactionsServiceMock(), categoriesProtocol: CategoriesProtocol = CategoriesServiceMock()) {
+    init(
+        direction: Direction,
+        startDate: Date,
+        endDate: Date,
+        transactionsProtocol: TransactionsProtocol = TransactionsServiceMock(),
+        categoriesProtocol: CategoriesProtocol = CategoriesServiceMock()
+    ) {
         self.direction = direction
         self.transactionsProtocol = transactionsProtocol
         self.categoriesProtocol = categoriesProtocol
@@ -61,8 +65,11 @@ class HistoryViewModel: ObservableObject {
         
         self.rawCategories = loadedCategories
         
-        
-        guard let loadedTransactions = try? await transactionsProtocol.getTransactionsInTimeFrame(userId: 1, startDate: dayStart, endDate: dayEnd) else {
+        guard let loadedTransactions = try? await transactionsProtocol.getTransactionsInTimeFrame(
+            userId: 1,
+            startDate: dayStart,
+            endDate: dayEnd
+        ) else {
             print("Failed to load transactions")
             return
         }
@@ -94,10 +101,10 @@ class HistoryViewModel: ObservableObject {
     
     private func sortTransactions(_ lhs: TransactionRowModel, _ rhs: TransactionRowModel) -> Bool {
         switch sortOption {
-            case .byDate:
-                return lhs.transaction.transactionDate > rhs.transaction.transactionDate
-            case .byAmount:
-                return lhs.transaction.amount > rhs.transaction.amount
+        case .byDate:
+            return lhs.transaction.transactionDate > rhs.transaction.transactionDate
+        case .byAmount:
+            return lhs.transaction.amount > rhs.transaction.amount
         }
     }
     

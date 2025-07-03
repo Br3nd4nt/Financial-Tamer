@@ -10,4 +10,4 @@ extension Decimal {
         formatter.usesGroupingSeparator = false
         return formatter.string(for: self) ?? ""
     }
-} 
+}

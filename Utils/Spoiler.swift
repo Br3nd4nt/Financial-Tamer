@@ -2,12 +2,19 @@ import SwiftUI
 import UIKit
 
 final class EmitterView: UIView {
-    override class var layerClass: AnyClass {
+    override static var layerClass: AnyClass {
         CAEmitterLayer.self
     }
+    
     override var layer: CAEmitterLayer {
-        super.layer as! CAEmitterLayer
+        switch self.layer {
+        case let emitterLayer as CAEmitterLayer:
+            return emitterLayer
+        default:
+            fatalError("Expected CAEmitterLayer, got: \(type(of: layer))")
+        }
     }
+    
     override func layoutSubviews() {
         super.layoutSubviews()
         layer.emitterPosition = CGPoint(x: bounds.size.width / 2, y: bounds.size.height / 2)

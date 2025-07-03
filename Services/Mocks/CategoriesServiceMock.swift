@@ -14,7 +14,7 @@ final class CategoriesServiceMock: CategoriesProtocol {
         Category( id: 4, name: "Одежда", emoji: Character("👔"), direction: .outcome ),
         Category( id: 5, name: "Питомцы", emoji: Character("🐕"), direction: .outcome ),
         Category( id: 6, name: "Медицина", emoji: Character("😷"), direction: .outcome ),
-        Category( id: 7, name: "Машина", emoji: Character("🏎️"), direction: .outcome ),
+        Category( id: 7, name: "Машина", emoji: Character("🏎️"), direction: .outcome )
     ]
     
     func getCategories() async throws -> [Category] {

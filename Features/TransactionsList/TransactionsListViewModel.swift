@@ -45,7 +45,11 @@ class TransactionsListViewModel: ObservableObject {
         }
     }
     
-    init(direction: Direction, transactionsProtocol: TransactionsProtocol = TransactionsServiceMock(), categoriesProtocol: CategoriesProtocol = CategoriesServiceMock()) {
+    init(
+        direction: Direction,
+        transactionsProtocol: TransactionsProtocol = TransactionsServiceMock(),
+        categoriesProtocol: CategoriesProtocol = CategoriesServiceMock()
+    ) {
         self.direction = direction
         self.transactionsProtocol = transactionsProtocol
         self.categoriesProtocol = categoriesProtocol
@@ -59,8 +63,11 @@ class TransactionsListViewModel: ObservableObject {
         
         self.rawCategories = loadedCategories
         
-        
-        guard let loadedTransactions = try? await transactionsProtocol.getTransactionsInTimeFrame(userId: 1, startDate: dayStart, endDate: dayEnd) else {
+        guard let loadedTransactions = try? await transactionsProtocol.getTransactionsInTimeFrame(
+            userId: 1,
+            startDate: dayStart,
+            endDate: dayEnd
+        ) else {
             print("Fairled to load transactions")
             return
         }
@@ -90,10 +97,10 @@ class TransactionsListViewModel: ObservableObject {
     
     private func sortTransactions(_ lhs: TransactionRowModel, _ rhs: TransactionRowModel) -> Bool {
         switch sortOption {
-            case .byDate:
-                return lhs.transaction.transactionDate > rhs.transaction.transactionDate
-            case .byAmount:
-                return lhs.transaction.amount > rhs.transaction.amount
+        case .byDate:
+            return lhs.transaction.transactionDate > rhs.transaction.transactionDate
+        case .byAmount:
+            return lhs.transaction.amount > rhs.transaction.amount
         }
     }
 }
