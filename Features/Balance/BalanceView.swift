@@ -8,65 +8,64 @@
 import SwiftUI
 import UIKit
 
+// i removed background color for rows because they look ugly...
 struct BalanceView: View {
     @StateObject private var viewModel = BalanceViewModel()
     @State private var showCurrencyMenu = false
     @FocusState private var isBalanceFieldFocused: Bool
-    @State private var balanceInput: String = ""
-    
+    @State private var balanceInput = Constants.empty
+    @State private var editedCurrency: Currency?
+    @State private var initialBalance: String = Constants.empty
+    @State private var initialCurrency: Currency?
+
     @State private var spoilerIsOn = true
-    
-    private func displayCurrencySymbol(for currency: String) -> String {
-        Currency.allCases.first {
-            $0.rawValue == currency || $0.symbol == currency
-        }?.symbol ?? currency
-    }
-    
+
     private var balanceRow: some View {
         HStack {
-            Text("Баланс")
+            Text(Constants.moneyBagSymbol)
+            Text(Constants.balanceTitle)
             Spacer()
             if let account = viewModel.account {
                 ZStack {
                     if viewModel.state == .redacting {
-                        TextField("Баланс", text: $balanceInput)
+                        TextField(Constants.balanceTitle, text: $balanceInput)
                             .keyboardType(.decimalPad)
                             .focused($isBalanceFieldFocused)
+                            .multilineTextAlignment(.trailing)
                             .onAppear {
-                                balanceInput = String(describing: account.balance)
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                // Set up editing state
+                                let formatted = String(describing: account.balance)
+                                balanceInput = formatted
+                                initialBalance = formatted
+                                editedCurrency = account.currency
+                                initialCurrency = account.currency
+                                DispatchQueue.main.asyncAfter(deadline: .now() + Constants.balanceFieldFocusDelay) {
                                     isBalanceFieldFocused = true
                                 }
                             }
                             .onChange(of: balanceInput) { _, newValue in
-                                let filtered = newValue.filter { "0123456789.".contains($0) }
+                                // Filter input, but do not update model
+                                var filtered = newValue.replacingOccurrences(of: Constants.comma, with: Constants.dot)
+                                filtered = filtered.filter { Constants.decimalCharacters.contains($0) }
+                                if let firstDotIndex = filtered.firstIndex(of: Constants.dot.first!) {
+                                    let beforeDot = filtered[..<filtered.index(after: firstDotIndex)]
+                                    let afterDot = filtered[filtered.index(after: firstDotIndex)...].replacingOccurrences(of: Constants.dot, with: Constants.empty)
+                                    filtered = String(beforeDot) + afterDot
+                                }
                                 if filtered != newValue {
                                     balanceInput = filtered
-                                }
-                                if let newDecimal = Decimal(string: filtered) {
-                                    let updated = BankAccount(
-                                        id: account.id,
-                                        userId: account.userId,
-                                        name: account.name,
-                                        balance: newDecimal,
-                                        currency: account.currency,
-                                        createdAt: account.createdAt,
-                                        updatedAt: account.updatedAt
-                                    )
-                                    viewModel.account = updated
-                                    Task { await viewModel.updateAccount(updated) }
                                 }
                             }
                             .transition(.opacity)
                     } else {
-                        Text(account.balance.formattedWithSeparator(currencySymbol: displayCurrencySymbol(for: account.currency)))
+                        Text(account.balance.formattedWithSeparator(currencySymbol: account.currency.symbol))
                             .spoiler(isOn: $spoilerIsOn)
                             .transition(.opacity)
                     }
                 }
                 .animation(.default, value: viewModel.state)
             } else {
-                ProgressView()
+                ProgressView(Constants.loading)
             }
         }
         .contentShape(Rectangle())
@@ -75,24 +74,24 @@ struct BalanceView: View {
                 isBalanceFieldFocused = true
             }
         }
-        .listRowBackground(viewModel.state == .viewing ? .activeTab : Color(.systemBackground))
+//        .listRowBackground(viewModel.state == .viewing ? .activeTab : Color(.systemBackground))
         .animation(.default, value: viewModel.state)
     }
-    
+
     private var currencyRow: some View {
         HStack {
-            Text("Валюта")
+            Text(Constants.currencyTitle)
             Spacer()
             if let account = viewModel.account {
-                Text(displayCurrencySymbol(for: account.currency))
+                Text((editedCurrency ?? account.currency).symbol)
                 if viewModel.state == .redacting {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 13))
+                    Image(systemName: Constants.chevronRight)
+                        .font(.system(size: Constants.chevronFontSize))
                         .foregroundStyle(.secondary)
                         .transition(.opacity)
                 }
             } else {
-                ProgressView()
+                ProgressView(Constants.loading)
             }
         }
         .contentShape(Rectangle())
@@ -101,19 +100,13 @@ struct BalanceView: View {
                 showCurrencyMenu = true
             }
         }
-        .listRowBackground(viewModel.state == .viewing ? .categoryBackground : Color(.systemBackground))
+//        .listRowBackground(viewModel.state == .viewing ? .categoryBackground : Color(.systemBackground))
         .animation(.default, value: viewModel.state)
     }
-    
+
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 16) {
-                Text("Мой счёт")
-                    .font(.largeTitle)
-                    .bold()
-                    .padding(.horizontal)
-                    .padding(.top)
-                
+            VStack(alignment: .leading, spacing: Constants.vStackSpacing) {
                 List {
                     Section {
                         balanceRow
@@ -124,7 +117,7 @@ struct BalanceView: View {
                 }
                 .listStyle(.insetGrouped)
                 .simultaneousGesture(
-                    DragGesture(minimumDistance: 20, coordinateSpace: .local)
+                    DragGesture(minimumDistance: Constants.dragMinimumDistance, coordinateSpace: .local)
                         .onEnded { value in
                             if abs(value.translation.height) > abs(value.translation.width) {
                                 isBalanceFieldFocused = false
@@ -137,17 +130,14 @@ struct BalanceView: View {
                     }
                 }
             }
-            .confirmationDialog("Валюта", isPresented: $showCurrencyMenu, titleVisibility: .visible) {
-                ForEach(Currency.allCases, id: \.self) { option in
+            .confirmationDialog(Constants.currencyTitle, isPresented: $showCurrencyMenu, titleVisibility: .visible) {
+                ForEach(Currency.allCases) { option in
                     Button(option.displayName) {
-                        if var account = viewModel.account {
-                            account.currency = option.rawValue
-                            Task {await viewModel.updateAccount(account)}
-                        }
+                        editedCurrency = option
                     }
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle(Constants.title)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(
@@ -160,28 +150,57 @@ struct BalanceView: View {
                             }
                         },
                         label: {
-                            Text(viewModel.state == .viewing ? "Редактировать" : "Сохранить")
+                            Text(viewModel.state == .viewing ? Constants.editButton : Constants.saveButton)
                         }
                     )
                 }
             }
-            .onAppear {
-                Task {
-                    await viewModel.loadAccount()
-                }
+            .task {
+                await viewModel.loadAccount()
             }
             .onChange(of: viewModel.state) { _, newState in
                 if newState == .redacting, let account = viewModel.account {
-                    balanceInput = String(describing: account.balance)
+                    let formatted = String(describing: account.balance)
+                    balanceInput = formatted
+                    initialBalance = formatted
+                    editedCurrency = account.currency
+                    initialCurrency = account.currency
                 }
                 if newState == .viewing {
                     isBalanceFieldFocused = false
+                    if viewModel.account != nil {
+                        if balanceInput != initialBalance, let newDecimal = Decimal(string: balanceInput) {
+                            Task { await viewModel.updateBalance(newDecimal) }
+                        }
+                        if let edited = editedCurrency, edited != initialCurrency {
+                            Task { await viewModel.updateCurrency(edited) }
+                        }
+                    }
                 }
             }
             .onShake {
-                spoilerIsOn = false
+                spoilerIsOn.toggle()
             }
         }
+    }
+
+    private enum Constants {
+        static let title = "Мой счёт"
+        static let vStackSpacing: Double = 16
+        static let balanceTitle = "Баланс"
+        static let moneyBagSymbol = "💰"
+        static let currencyTitle = "Валюта"
+        static let chevronRight = "chevron.right"
+        static let chevronFontSize: Double = 13
+        static let editButton = "Редактировать"
+        static let saveButton = "Сохранить"
+        static let dragMinimumDistance: Double = 20
+        static let balanceFieldFocusDelay = 0.1
+        static let decimalCharacters = "0123456789."
+        static let comma = ","
+        static let dot = "."
+        static let empty = ""
+        static let loading = "Загрузка..."
     }
 }
 

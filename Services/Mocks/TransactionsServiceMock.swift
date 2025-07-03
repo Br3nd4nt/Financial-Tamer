@@ -8,7 +8,8 @@
 import Foundation
 
 final class TransactionsServiceMock: TransactionsProtocol {
-    
+    static let shared = TransactionsServiceMock()
+    private init() {}
     private var mockTransactions: [Transaction] = [
         // 💸 Зарплата (income)
         Transaction(
@@ -21,7 +22,7 @@ final class TransactionsServiceMock: TransactionsProtocol {
             createdAt: .now,
             updatedAt: .now
         ),
-        
+
         // 🤑 Подработка (income)
         Transaction(
             id: 2,
@@ -43,7 +44,7 @@ final class TransactionsServiceMock: TransactionsProtocol {
             createdAt: .now,
             updatedAt: .now
         ),
-        
+
         // 🏠 Аренда квартиры (outcome)
         Transaction(
             id: 4,
@@ -55,13 +56,13 @@ final class TransactionsServiceMock: TransactionsProtocol {
             createdAt: .now,
             updatedAt: .now
         ),
-        
+
         // 👔 Одежда (outcome)
         Transaction(
             id: 5,
             accountId: 1,
             categoryId: 4,
-            amount: 8_500,
+            amount: 8500,
             transactionDate: .create(day: 19, month: 6, year: 2025, hour: 16),
             comment: "Куртка",
             createdAt: .now,
@@ -71,19 +72,19 @@ final class TransactionsServiceMock: TransactionsProtocol {
             id: 6,
             accountId: 1,
             categoryId: 4,
-            amount: 4_200,
+            amount: 4200,
             transactionDate: .create(day: 21, month: 6, year: 2025, hour: 14, minute: 15),
             comment: "Футболки",
             createdAt: .now,
             updatedAt: .now
         ),
-        
+
         // 🐕 Питомцы (outcome)
         Transaction(
             id: 7,
             accountId: 1,
             categoryId: 5,
-            amount: 3_800,
+            amount: 3800,
             transactionDate: .create(day: 23, month: 6, year: 2025, hour: 11),
             comment: "Корм для Джэка",
             createdAt: .now,
@@ -93,26 +94,26 @@ final class TransactionsServiceMock: TransactionsProtocol {
             id: 8,
             accountId: 1,
             categoryId: 5,
-            amount: 2_500,
+            amount: 2500,
             transactionDate: .create(day: 22, month: 6, year: 2025, hour: 9),
             comment: "Игрушка для питомца",
             createdAt: .now,
             updatedAt: .now
         ),
-        
+
         // 😷 Медицина (outcome)
         Transaction(
             id: 9,
             accountId: 1,
             categoryId: 6,
-            amount: 5_000,
+            amount: 5000,
             transactionDate: .create(day: 16, month: 6, year: 2025, hour: 17, minute: 45),
             comment: "Прием у терапевта",
             createdAt: .now,
             updatedAt: .now
         ),
-        
-        // 🏎️ Машина (outcome)
+
+        // ��️ Машина (outcome)
         Transaction(
             id: 10,
             accountId: 1,
@@ -127,13 +128,13 @@ final class TransactionsServiceMock: TransactionsProtocol {
             id: 11,
             accountId: 1,
             categoryId: 7,
-            amount: 7_300,
+            amount: 7300,
             transactionDate: .create(day: 21, month: 6, year: 2025, hour: 13),
             comment: "Мойка автомобиля",
             createdAt: .now,
             updatedAt: .now
         ),
-        
+
         Transaction( // Для демонстрации таба дохода
             id: 12,
             accountId: 1,
@@ -145,40 +146,36 @@ final class TransactionsServiceMock: TransactionsProtocol {
             updatedAt: .now
         )
     ]
-    
+
     func getTransactionsInTimeFrame(userId: Int, startDate: Date, endDate: Date) async throws -> [Transaction] {
-        return mockTransactions.filter {$0.accountId == userId && $0.transactionDate >= startDate && $0.transactionDate <= endDate}
+        mockTransactions.filter { $0.accountId == userId && $0.transactionDate >= startDate && $0.transactionDate <= endDate }
     }
-    
+
     func createTransaction(transaction: Transaction) async throws -> Transaction {
-        
         guard !mockTransactions.contains(where: { $0.id == transaction.id }) else {
             throw TransactionServiceError.dublicatedTransaction
         }
-        
+
         mockTransactions.append(transaction)
         return transaction
     }
-    
+
     func updateTransaction(transaction: Transaction) async throws -> Transaction {
-        
         guard let index = mockTransactions.firstIndex(where: { $0.id == transaction.id }) else {
             throw TransactionServiceError.invalidTransaction
         }
-    
+
         mockTransactions[index] = transaction
-        
+
         return transaction
     }
-    
+
     func deleteTransaction(id: Int) async throws {
-        
         guard let index = mockTransactions.firstIndex(where: { $0.id == id }) else {
             throw TransactionServiceError.invalidTransactionId
         }
         mockTransactions.remove(at: index)
     }
-    
 }
 
 extension Date {

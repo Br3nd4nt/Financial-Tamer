@@ -9,11 +9,11 @@ enum Currency: String, CaseIterable, Identifiable {
     case rub = "RUB"
     case dollar = "USD"
     case euro = "EUR"
-    
+
     var id: String {
         rawValue
     }
-    
+
     var symbol: String {
         switch self {
         case .rub:
@@ -24,7 +24,7 @@ enum Currency: String, CaseIterable, Identifiable {
             return "€"
         }
     }
-    
+
     var displayName: String {
         switch self {
         case .rub:

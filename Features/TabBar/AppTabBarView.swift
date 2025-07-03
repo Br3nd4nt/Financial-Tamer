@@ -12,41 +12,55 @@ struct AppTabBarView: View {
         case outcome, income, balance, articles, settings
     }
     @State private var selectedTab: Tab = .balance
-    
+
     var body: some View {
         TabView(selection: $selectedTab) {
             TransactionsListView(direction: .outcome)
                 .tabItem {
-                    Label("Расходы", systemImage: "chart.line.downtrend.xyaxis")
+                    Label(Constants.outcomeTitle, systemImage: Constants.outcomeIcon)
                 }
                 .tint(.accent)
                 .tag(Tab.outcome)
             TransactionsListView(direction: .income)
                 .tabItem {
-                    Label("Доходы", systemImage: "chart.line.uptrend.xyaxis")
+                    Label(Constants.incomeTitle, systemImage: Constants.incomeIcon)
                 }
                 .tint(.accent)
                 .tag(Tab.income)
             BalanceView()
                 .tabItem {
-                    Label("Счет", systemImage: "chart.line.text.clipboard")
+                    Label(Constants.balanceTitle, systemImage: Constants.balanceIcon)
                 }
                 .tint(.accent)
                 .tag(Tab.balance)
-            Text("Статьи")
+            Text(Constants.articlesTitle)
                 .tabItem {
-                    Label("Статьи", systemImage: "list.bullet.rectangle")
+                    Label(Constants.articlesTitle, systemImage: Constants.articlesIcon)
                 }
                 .tag(Tab.articles)
-            Text("Настройки")
+            Text(Constants.settingsTitle)
                 .tabItem {
-                    Label("Настройки", systemImage: "gearshape.2")
+                    Label(Constants.settingsTitle, systemImage: Constants.settingsIcon)
                 }
                 .tag(Tab.settings)
         }
-        .tint(.activeTab) 
+        .tint(.activeTab)
         .onShake {
-            print("Device shaken!")
+            print(Constants.shakeMessage)
         }
+    }
+
+    private enum Constants {
+        static let outcomeTitle = "Расходы"
+        static let outcomeIcon = "chart.line.downtrend.xyaxis"
+        static let incomeTitle = "Доходы"
+        static let incomeIcon = "chart.line.uptrend.xyaxis"
+        static let balanceTitle = "Счет"
+        static let balanceIcon = "chart.line.text.clipboard"
+        static let articlesTitle = "Статьи"
+        static let articlesIcon = "list.bullet.rectangle"
+        static let settingsTitle = "Настройки"
+        static let settingsIcon = "gearshape.2"
+        static let shakeMessage = "Device shaken!"
     }
 }

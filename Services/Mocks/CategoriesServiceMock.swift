@@ -6,7 +6,8 @@
 //
 
 final class CategoriesServiceMock: CategoriesProtocol {
-    
+    static let shared = CategoriesServiceMock()
+    private init() {}
     private var mockCategories: [Category] = [
         Category( id: 1, name: "Зарплата", emoji: Character("💸"), direction: .income ),
         Category( id: 2, name: "Подработка", emoji: Character("🤑"), direction: .income ),
@@ -16,13 +17,12 @@ final class CategoriesServiceMock: CategoriesProtocol {
         Category( id: 6, name: "Медицина", emoji: Character("😷"), direction: .outcome ),
         Category( id: 7, name: "Машина", emoji: Character("🏎️"), direction: .outcome )
     ]
-    
+
     func getCategories() async throws -> [Category] {
-        return mockCategories
+        mockCategories
     }
-    
+
     func getCategoriesDyDirection(direction: Direction) async throws -> [Category] {
-        return mockCategories.filter { $0.direction == direction }
+        mockCategories.filter { $0.direction == direction }
     }
-    
 }

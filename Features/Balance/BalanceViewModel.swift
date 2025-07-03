@@ -8,23 +8,23 @@
 import SwiftUI
 import Foundation
 
-class BalanceViewModel: ObservableObject {
+@MainActor
+final class BalanceViewModel: ObservableObject {
     enum State {
         case viewing
         case redacting
     }
-    
+
     @Published var account: BankAccount?
     @Published var state: State = .viewing
-    
+
     private let bankAccountsService: BankAccountsProtocol
-    private let userId: Int = 1
-    
-    init(bankAccountsService: BankAccountsProtocol = BankAccountsServiceMock()) {
+    private let userId = 1
+
+    init(bankAccountsService: BankAccountsProtocol = BankAccountsServiceMock.shared) {
         self.bankAccountsService = bankAccountsService
     }
-    
-    @MainActor
+
     func loadAccount() async {
         do {
             let account = try await bankAccountsService.getBankAccount(userId: userId)
@@ -34,22 +34,20 @@ class BalanceViewModel: ObservableObject {
             self.account = nil
         }
     }
-    
+
     func setState(_ newState: State) {
         state = newState
     }
-    
+
     func toggleState() {
         state = (state == .viewing) ? .redacting : .viewing
     }
-    
-    @MainActor
+
     func refreshAccount() async {
         try? await Task.sleep(nanoseconds: 1_000_000_000) // just simulation of waiting for server response
         await loadAccount()
     }
-    
-    @MainActor
+
     func updateAccount(_ updated: BankAccount) async {
         do {
             let newAccount = try await bankAccountsService.updateBankAccount(userId: userId, newAccount: updated)
@@ -57,5 +55,37 @@ class BalanceViewModel: ObservableObject {
         } catch {
             print("Failed to update bank account: \(error)")
         }
+    }
+
+    func updateBalance(_ newBalance: Decimal) async {
+        guard var current = account else {
+            return
+        }
+        current = BankAccount(
+            id: current.id,
+            userId: current.userId,
+            name: current.name,
+            balance: newBalance,
+            currency: current.currency,
+            createdAt: current.createdAt,
+            updatedAt: Date()
+        )
+        await updateAccount(current)
+    }
+
+    func updateCurrency(_ newCurrency: Currency) async {
+        guard var current = account else {
+            return
+        }
+        current = BankAccount(
+            id: current.id,
+            userId: current.userId,
+            name: current.name,
+            balance: current.balance,
+            currency: newCurrency,
+            createdAt: current.createdAt,
+            updatedAt: Date()
+        )
+        await updateAccount(current)
     }
 }

@@ -8,51 +8,50 @@
 import SwiftUI
 
 struct HistoryView: View {
-    
     @StateObject private var viewModel: HistoryViewModel
-    
+
     private let direction: Direction
     private let maximumDate: Date
-    private let dayLength: DateComponents = DateComponents(day: 1, second: -1)
-    
+    private let dayLength = DateComponents(day: Constants.dayLengthDay, second: Constants.dayLengthSecond)
+
     init(direction: Direction) {
         self.direction = direction
-        
+
         let dayStart: Date = Calendar.current.startOfDay(for: Date())
         let dayEnd: Date = {
-            guard let date = Calendar.current.date(byAdding: DateComponents(day: 1, second: -1), to: Calendar.current.startOfDay(for: Date())) else {
-                print("Failed to create a date")
+            guard let date = Calendar.current.date(byAdding: DateComponents(day: Constants.dayLengthDay, second: Constants.dayLengthSecond), to: Calendar.current.startOfDay(for: Date())) else {
+                print(Constants.failedToCreateDate)
                 return Date()
             }
             return date
         }()
-        
+
         maximumDate = dayEnd
-        
+
         _viewModel = StateObject(
             wrappedValue: HistoryViewModel(direction: direction, startDate: dayStart, endDate: dayEnd)
         )
     }
-    
+
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 16) {
-                Text("Моя история")
+            VStack(alignment: .leading, spacing: Constants.vStackSpacing) {
+                Text(Constants.title)
                     .font(.largeTitle)
                     .bold()
                     .padding(.horizontal)
-                    .navigationTitle("Моя история")
-                
+                    .navigationTitle(Constants.title)
+
                 List {
                     Section {
                         HStack {
-                            Text("Начало")
+                            Text(Constants.startTitle)
                             Spacer()
                             DatePicker(selection: $viewModel.dayStart, in: ...maximumDate, displayedComponents: .date) {}
                                 .onChange(of: viewModel.dayStart) {
                                     if viewModel.dayEnd < viewModel.dayStart {
                                         guard let date = Calendar.current.date(byAdding: dayLength, to: viewModel.dayStart) else {
-                                            print("Failed to create a date")
+                                            print(Constants.failedToCreateDate)
                                             return
                                         }
                                         viewModel.dayEnd = date
@@ -62,15 +61,15 @@ struct HistoryView: View {
                                     }
                                 }
                                 .background(
-                                    Color.activeTab.opacity(0.1)
-                                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                                    Color.activeTab.opacity(Constants.datePickerOpacity)
+                                        .clipShape(RoundedRectangle(cornerRadius: Constants.datePickerCornerRadius))
                                 )
                         }
-                        
+
                         HStack {
-                            Text("Конец")
+                            Text(Constants.endTitle)
                             Spacer()
-                            
+
                             DatePicker(selection: $viewModel.dayEnd, in: ...maximumDate, displayedComponents: .date) {}
                                 .onChange(of: viewModel.dayEnd) {
                                     if viewModel.dayEnd < viewModel.dayStart {
@@ -81,14 +80,14 @@ struct HistoryView: View {
                                     }
                                 }
                                 .background(
-                                    Color.activeTab.opacity(0.1)
-                                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                                    Color.activeTab.opacity(Constants.datePickerOpacity)
+                                        .clipShape(RoundedRectangle(cornerRadius: Constants.datePickerCornerRadius))
                                 )
                         }
                         VStack(alignment: .leading) {
-                            Text("Выберите метод сортировки")
+                            Text(Constants.sortTitle)
                                 .font(.callout)
-                            Picker("Выберите метод сортировки", selection: $viewModel.sortOption) {
+                            Picker(Constants.sortTitle, selection: $viewModel.sortOption) {
                                 ForEach(TransactionSortOption.allCases, id: \.self) {
                                     Text("\($0.rawValue)")
                                 }
@@ -96,14 +95,14 @@ struct HistoryView: View {
                             .pickerStyle(.segmented)
                         }
                         HStack {
-                            Text("Сумма")
+                            Text(Constants.totalTitle)
                             Spacer()
-                            Text(viewModel.total.formattedWithSeparator(currencySymbol: "₽"))
+                            Text(viewModel.total.formattedWithSeparator(currencySymbol: Constants.currencySymbol))
                         }
                     }
-                    Section("Операции") {
+                    Section(Constants.operationsTitle) {
                         ForEach(viewModel.transactionRows) { row in
-                            HistoryRow(transaction: row.transaction, category: row.category)
+                            HistoryRow(fullTransaction: row)
                         }
                     }
                 }
@@ -114,9 +113,9 @@ struct HistoryView: View {
                     Button(
                         action: {},
                         label: {
-                            Image(systemName: "document")
+                            Image(systemName: Constants.toolbarIcon)
                                 .font(.headline)
-                                .padding(8)
+                                .padding(Constants.toolbarIconPadding)
                         }
                     )
                 }
@@ -125,6 +124,24 @@ struct HistoryView: View {
                 await viewModel.loadTransactions()
             }
         }
+    }
+
+    private enum Constants {
+        static let title = "Моя история"
+        static let vStackSpacing: Double = 16
+        static let startTitle = "Начало"
+        static let endTitle = "Конец"
+        static let sortTitle = "Выберите метод сортировки"
+        static let totalTitle = "Сумма"
+        static let operationsTitle = "Операции"
+        static let currencySymbol = "₽"
+        static let dayLengthDay = 1
+        static let dayLengthSecond = -1
+        static let failedToCreateDate = "Failed to create a date"
+        static let datePickerOpacity = 0.1
+        static let datePickerCornerRadius: Double = 10
+        static let toolbarIcon = "document"
+        static let toolbarIconPadding: Double = 8
     }
 }
 

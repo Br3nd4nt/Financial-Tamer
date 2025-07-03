@@ -5,20 +5,21 @@ final class EmitterView: UIView {
     override static var layerClass: AnyClass {
         CAEmitterLayer.self
     }
-    
-    override var layer: CAEmitterLayer {
-        switch self.layer {
-        case let emitterLayer as CAEmitterLayer:
-            return emitterLayer
-        default:
-            fatalError("Expected CAEmitterLayer, got: \(type(of: layer))")
+
+    internal var emitterLayer: CAEmitterLayer {
+        guard let layer = super.layer as? CAEmitterLayer else {
+            fatalError("Expected CAEmitterLayer, got: \(type(of: super.layer))")
         }
+        return layer
     }
-    
+
     override func layoutSubviews() {
         super.layoutSubviews()
-        layer.emitterPosition = CGPoint(x: bounds.size.width / 2, y: bounds.size.height / 2)
-        layer.emitterSize = bounds.size
+        emitterLayer.emitterPosition = CGPoint(
+            x: bounds.midX,
+            y: bounds.midY
+        )
+        emitterLayer.emitterSize = bounds.size
     }
 }
 
@@ -28,6 +29,7 @@ struct SpoilerView: UIViewRepresentable {
     func makeUIView(context: Context) -> EmitterView {
         let emitterView = EmitterView()
         let emitterCell = CAEmitterCell()
+
         emitterCell.contents = Self.dotImage()?.cgImage
         emitterCell.color = UIColor.black.cgColor
         emitterCell.contentsScale = 1.8
@@ -37,27 +39,32 @@ struct SpoilerView: UIViewRepresentable {
         emitterCell.velocityRange = 20
         emitterCell.alphaRange = 1
         emitterCell.birthRate = 500
-        emitterView.layer.emitterShape = .rectangle
-        emitterView.layer.emitterCells = [emitterCell]
+
+        emitterView.emitterLayer.emitterShape = .rectangle
+        emitterView.emitterLayer.emitterCells = [emitterCell]
+
         return emitterView
     }
 
     func updateUIView(_ uiView: EmitterView, context: Context) {
         if isOn {
-            uiView.layer.beginTime = CACurrentMediaTime()
+            uiView.emitterLayer.beginTime = CACurrentMediaTime()
         }
-        uiView.layer.birthRate = isOn ? 1 : 0
+        uiView.emitterLayer.birthRate = isOn ? 1 : 0
     }
 
     static func dotImage() -> UIImage? {
         let size = CGSize(width: 4, height: 4)
         UIGraphicsBeginImageContextWithOptions(size, false, 0)
-        let context = UIGraphicsGetCurrentContext()
-        context?.setFillColor(UIColor.white.cgColor)
-        context?.fillEllipse(in: CGRect(origin: .zero, size: size))
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        return image
+        defer { UIGraphicsEndImageContext() }
+
+        guard let context = UIGraphicsGetCurrentContext() else {
+            return nil
+        }
+        context.setFillColor(UIColor.white.cgColor)
+        context.fillEllipse(in: CGRect(origin: .zero, size: size))
+
+        return UIGraphicsGetImageFromCurrentImageContext()
     }
 }
 
@@ -80,4 +87,4 @@ extension View {
                 isOn.wrappedValue.toggle()
             }
     }
-} 
+}

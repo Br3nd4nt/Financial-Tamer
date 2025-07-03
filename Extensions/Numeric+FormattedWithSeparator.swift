@@ -22,6 +22,8 @@ public let separatorFormatter: NumberFormatter = {
     let formatter = NumberFormatter()
     formatter.numberStyle = .decimal
     formatter.groupingSeparator = " "
-    formatter.maximumFractionDigits = 0
+    formatter.decimalSeparator = "."
+    formatter.maximumFractionDigits = 2
+    formatter.minimumFractionDigits = 0
     return formatter
 }()

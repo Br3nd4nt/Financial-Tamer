@@ -12,7 +12,27 @@ struct BankAccount {
     let userId: Int
     let name: String
     let balance: Decimal
-    var currency: String
+    var currency: Currency
     let createdAt: Date
     let updatedAt: Date
+
+    init(id: Int, userId: Int, name: String, balance: Decimal, currency: Currency, createdAt: Date, updatedAt: Date) {
+        self.id = id
+        self.userId = userId
+        self.name = name
+        self.balance = balance
+        self.currency = currency
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+
+    init(id: Int, userId: Int, name: String, balance: Decimal, currency: String, createdAt: Date, updatedAt: Date) {
+        self.id = id
+        self.userId = userId
+        self.name = name
+        self.balance = balance
+        self.currency = Currency(rawValue: currency) ?? .rub
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
 }

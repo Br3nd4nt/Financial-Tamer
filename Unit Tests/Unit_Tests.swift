@@ -11,7 +11,6 @@ import Foundation
 @testable import Financial_Tamer
 
 struct TransactionParseUnitTests {
-    
     @Test func transactionJSONtoObject() async throws {
         let jsonObject: [String: Any] = [
             "id": 1,
@@ -23,9 +22,9 @@ struct TransactionParseUnitTests {
             "createdAt": "2025-06-09T13:16:09.705Z",
             "updatedAt": "2025-06-09T13:16:09.705Z"
         ]
-        
+
         let obj: Transaction = try #require(Transaction.parse(jsonObject: jsonObject))
-        
+
         #expect(obj.id == 1)
         #expect(obj.accountId == 1)
         #expect(obj.categoryId == 1)
@@ -33,16 +32,17 @@ struct TransactionParseUnitTests {
     }
 
     @Test func transactionToObject() async throws {
-        
         let date = dateFormatter.date(from: "2025-06-09T13:16:09.705Z")!
-        let transaction: Transaction = Transaction(id: 1,
-                                                   accountId: 1,
-                                                   categoryId: 1,
-                                                   amount: 100.0,
-                                                   transactionDate: date,
-                                                   comment: "test comment",
-                                                   createdAt: date,
-                                                   updatedAt: date)
+        let transaction = Transaction(
+            id: 1,
+            accountId: 1,
+            categoryId: 1,
+            amount: 100.0,
+            transactionDate: date,
+            comment: "test comment",
+            createdAt: date,
+            updatedAt: date
+        )
         let object = try #require(transaction.jsonObject as? [String: Any])
         #expect(object["id"] as? Int == 1)
         #expect(object["accountId"] as? Int == 1)

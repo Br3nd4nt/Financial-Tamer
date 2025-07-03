@@ -8,24 +8,25 @@
 import Foundation
 
 @MainActor
-class TransactionsListViewModel: ObservableObject {
-    
-    @Published var transactionRows: [TransactionRowModel] = []
-    
+final class TransactionsListViewModel: ObservableObject {
+    @Published var transactionRows: [TransactionFull] = []
+
     @Published var sortOption: TransactionSortOption = .byDate {
         didSet {
             transactionRows.sort(by: sortTransactions)
         }
     }
-    
+
     private var rawTransactions: [Transaction] = []
     private var rawCategories: [Category] = []
-    
+    private var account: BankAccount?
+
     private let direction: Direction
-    
+
     private let transactionsProtocol: TransactionsProtocol
     private let categoriesProtocol: CategoriesProtocol
-    
+    private let bankAccountsProtocol: BankAccountsProtocol
+
     private var dayStart: Date = Calendar.current.startOfDay(for: Date())
     private var dayEnd: Date = {
         guard let date = Calendar.current.date(byAdding: DateComponents(day: 1, second: -1), to: Calendar.current.startOfDay(for: Date())) else {
@@ -34,35 +35,43 @@ class TransactionsListViewModel: ObservableObject {
         }
         return date
     }()
-    
+
     var total: Decimal {
         transactionRows.reduce(0) { result, row in
             if row.category.direction == direction {
-                result + row.transaction.amount
+                result + row.amount
             } else {
                 result
             }
         }
     }
-    
+
     init(
         direction: Direction,
-        transactionsProtocol: TransactionsProtocol = TransactionsServiceMock(),
-        categoriesProtocol: CategoriesProtocol = CategoriesServiceMock()
+        transactionsProtocol: TransactionsProtocol = TransactionsServiceMock.shared,
+        categoriesProtocol: CategoriesProtocol = CategoriesServiceMock.shared,
+        bankAccountsProtocol: BankAccountsProtocol = BankAccountsServiceMock.shared
     ) {
         self.direction = direction
         self.transactionsProtocol = transactionsProtocol
         self.categoriesProtocol = categoriesProtocol
+        self.bankAccountsProtocol = bankAccountsProtocol
     }
-    
+
     func loadTransactions() async {
         guard let loadedCategories = try? await categoriesProtocol.getCategories() else {
             print("Fairled to load categories")
             return
         }
-        
+
         self.rawCategories = loadedCategories
-        
+
+        guard let loadedAccount = try? await bankAccountsProtocol.getBankAccount(userId: 1) else {
+            print("Failed to load bank account")
+            return
+        }
+        self.account = loadedAccount
+
         guard let loadedTransactions = try? await transactionsProtocol.getTransactionsInTimeFrame(
             userId: 1,
             startDate: dayStart,
@@ -71,12 +80,12 @@ class TransactionsListViewModel: ObservableObject {
             print("Fairled to load transactions")
             return
         }
-        
+
         self.rawTransactions = loadedTransactions
-        
+
         let categoryDict = Dictionary(uniqueKeysWithValues: rawCategories.map { ($0.id, $0) })
-        
-        let rows = rawTransactions.compactMap { transaction -> TransactionRowModel? in
+
+        let rows = rawTransactions.compactMap { transaction -> TransactionFull? in
             guard let category = categoryDict[transaction.categoryId] else {
                 print("Missing category for transaction: \(transaction.id)")
                 return nil
@@ -84,23 +93,27 @@ class TransactionsListViewModel: ObservableObject {
             if category.direction != direction {
                 return nil
             }
-            return TransactionRowModel(transaction: transaction, category: category, id: transaction.id)
+            guard let account = self.account else {
+                print("No account loaded for transaction: \(transaction.id)")
+                return nil
+            }
+            return TransactionFull(transaction: transaction, account: account, category: category)
         }
-        
+
         self.transactionRows = rows
     }
-    
+
     enum SortOption: String, CaseIterable {
         case byDate = "По дате"
         case byAmount = "По сумме"
     }
-    
-    private func sortTransactions(_ lhs: TransactionRowModel, _ rhs: TransactionRowModel) -> Bool {
+
+    private func sortTransactions(_ lhs: TransactionFull, _ rhs: TransactionFull) -> Bool {
         switch sortOption {
         case .byDate:
-            return lhs.transaction.transactionDate > rhs.transaction.transactionDate
+            return lhs.transactionDate > rhs.transactionDate
         case .byAmount:
-            return lhs.transaction.amount > rhs.transaction.amount
+            return lhs.amount > rhs.amount
         }
     }
 }
