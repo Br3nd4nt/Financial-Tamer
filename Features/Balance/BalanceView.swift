@@ -12,16 +12,16 @@ struct BalanceView: View {
     @StateObject private var viewModel = BalanceViewModel()
     @State private var showCurrencyMenu = false
     @FocusState private var isBalanceFieldFocused: Bool
-    @State private var balanceInput: String = ""
-    
+    @State private var balanceInput = ""
+
     @State private var spoilerIsOn = true
-    
+
     private func displayCurrencySymbol(for currency: String) -> String {
         Currency.allCases.first {
             $0.rawValue == currency || $0.symbol == currency
         }?.symbol ?? currency
     }
-    
+
     private var balanceRow: some View {
         HStack {
             Text(Constants.balanceTitle)
@@ -38,7 +38,7 @@ struct BalanceView: View {
                                     isBalanceFieldFocused = true
                                 }
                             }
-                            .onChange(of: balanceInput) { oldValue, newValue in
+                            .onChange(of: balanceInput) { _, newValue in
                                 let filtered = newValue.filter { Constants.decimalCharacters.contains($0) }
                                 if filtered != newValue {
                                     balanceInput = filtered
@@ -53,13 +53,12 @@ struct BalanceView: View {
                                         createdAt: account.createdAt,
                                         updatedAt: account.updatedAt
                                     )
-                                    viewModel.account = updated
                                     Task { await viewModel.updateAccount(updated) }
                                 }
                             }
                             .transition(.opacity)
                     } else {
-                        Text(account.balance.formattedWithSeparator(currencySymbol: displayCurrencySymbol(account.currency)))
+                        Text(account.balance.formattedWithSeparator(currencySymbol: displayCurrencySymbol(for: account.currency)))
                             .spoiler(isOn: $spoilerIsOn)
                             .transition(.opacity)
                     }
@@ -78,13 +77,20 @@ struct BalanceView: View {
         .listRowBackground(viewModel.state == .viewing ? .activeTab : Color(.systemBackground))
         .animation(.default, value: viewModel.state)
     }
-    
+
     private var currencyRow: some View {
         HStack {
             Text(Constants.currencyTitle)
             Spacer()
             if let account = viewModel.account {
-                Text(displayCurrencySymbol(account.currency))
+//                Text(displayCurrencySymbol(for: ForEach(Currency.allCases, id: \.self) { option in
+//                    Button(option.displayName) {
+//                        if var account = viewModel.account {
+//                            account.currency = option.rawValue
+//                            Task {await viewModel.updateAccount(account)}
+//                        }
+//                    }
+//                }account.currency))
                 if viewModel.state == .redacting {
                     Image(systemName: Constants.chevronRight)
                         .font(.system(size: Constants.chevronFontSize))
@@ -104,7 +110,7 @@ struct BalanceView: View {
         .listRowBackground(viewModel.state == .viewing ? .categoryBackground : Color(.systemBackground))
         .animation(.default, value: viewModel.state)
     }
-    
+
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: Constants.vStackSpacing) {
@@ -113,7 +119,7 @@ struct BalanceView: View {
                     .bold()
                     .padding(.horizontal)
                     .padding(.top)
-                
+
                 List {
                     Section {
                         balanceRow
@@ -137,25 +143,16 @@ struct BalanceView: View {
                     }
                 }
             }
-            .confirmationDialog(Constants.currencyTitle, isPresented: $showCurrencyMenu, titleVisibility: .visible, actions: {
-                ForEach(Currency.allCases, id: \.self) { option in
-                    Button(option.name) {
+            .confirmationDialog(Constants.currencyTitle, isPresented: $showCurrencyMenu, titleVisibility: .visible) {
+                ForEach(Currency.allCases) { option in
+                    Button(option.displayName) {
                         if var account = viewModel.account {
-                            account = BankAccount(
-                                id: account.id,
-                                userId: account.userId,
-                                name: account.name,
-                                balance: account.balance,
-                                currency: option.symbol,
-                                createdAt: account.createdAt,
-                                updatedAt: account.updatedAt
-                            )
-                            viewModel.account = account
+                            account.currency = option.rawValue
                             Task { await viewModel.updateAccount(account) }
                         }
                     }
                 }
-            })
+            }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -174,12 +171,12 @@ struct BalanceView: View {
                     )
                 }
             }
-            .onAppear {
+            .task {
                 Task {
                     await viewModel.loadAccount()
                 }
             }
-            .onChange(of: viewModel.state) { oldState, newState in
+            .onChange(of: viewModel.state) { _, newState in
                 if newState == .redacting, let account = viewModel.account {
                     balanceInput = String(describing: account.balance)
                 }
@@ -195,15 +192,15 @@ struct BalanceView: View {
 
     private enum Constants {
         static let title = "Мой счёт"
-        static let vStackSpacing: CGFloat = 16
+        static let vStackSpacing: Double = 16
         static let balanceTitle = "Баланс"
         static let currencyTitle = "Валюта"
         static let chevronRight = "chevron.right"
-        static let chevronFontSize: CGFloat = 13
+        static let chevronFontSize: Double = 13
         static let editButton = "Редактировать"
         static let saveButton = "Сохранить"
-        static let dragMinimumDistance: CGFloat = 20
-        static let balanceFieldFocusDelay: Double = 0.1
+        static let dragMinimumDistance: Double = 20
+        static let balanceFieldFocusDelay = 0.1
         static let decimalCharacters = "0123456789."
     }
 }

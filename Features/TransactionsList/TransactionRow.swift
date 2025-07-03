@@ -8,8 +8,7 @@
 import SwiftUI
 
 struct TransactionRow: View {
-    var transaction: Transaction
-    var category: Category
+    var fullTransaction: TransactionFull
 
     var body: some View {
         HStack {
@@ -17,26 +16,26 @@ struct TransactionRow: View {
                 Circle()
                     .fill(.categoryBackground)
                     .aspectRatio(Constants.circleAspectRatio, contentMode: .fit)
-                Text("\(category.emoji)")
+                Text("\(fullTransaction.category.emoji)")
                     .padding(Constants.emojiPadding)
             }
             .fixedSize(horizontal: true, vertical: true)
 
-            if transaction.comment.isEmpty {
-                Text(category.name)
+            if fullTransaction.comment.isEmpty {
+                Text(fullTransaction.category.name)
                     .lineLimit(Constants.lineLimit)
             } else {
                 VStack(alignment: .leading) {
-                    Text(category.name)
+                    Text(fullTransaction.category.name)
                         .lineLimit(Constants.lineLimit)
-                    Text(transaction.comment)
+                    Text(fullTransaction.comment)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .lineLimit(Constants.lineLimit)
                 }
             }
             Spacer()
-            Text(transaction.amount.formattedWithSeparator(currencySymbol: Constants.currencySymbol))
+            Text(fullTransaction.amount.formattedWithSeparator(currencySymbol: Constants.currencySymbol))
 
             Image(systemName: Constants.chevronRight)
                 .font(.system(size: Constants.chevronFontSize, weight: .bold))
@@ -46,15 +45,13 @@ struct TransactionRow: View {
     }
 
     private enum Constants {
-        static let circleAspectRatio: CGFloat = 1
-        static let emojiPadding: CGFloat = 6
-        static let lineLimit: Int = 1
+        static let circleAspectRatio: Double = 1
+        static let emojiPadding: Double = 6
+        static let lineLimit = 1
         static let currencySymbol = "₽"
         static let chevronRight = "chevron.right"
-        static let chevronFontSize: CGFloat = 13
-        static let chevronPadding: CGFloat = 8
-        static let categoryNotFound = "Категория не найдена"
-        static let idPrefix = "ID: "
+        static let chevronFontSize: Double = 13
+        static let chevronPadding: Double = 8
     }
 }
 
@@ -97,27 +94,37 @@ struct TransactionRow: View {
                 updatedAt: Date.now
             )
         ]
+        private var mockAccount: BankAccount = BankAccount(
+            id: 1,
+            userId: 1,
+            name: "My account",
+            balance: 10000,
+            currency: "RUB",
+            createdAt: Date.now,
+            updatedAt: Date.now
+        )
 
         var body: some View {
-                List {
-                    ForEach(Array(transactions.enumerated()), id: \.element.id) { index, transaction in
-                        let category = categories.first { $0.id == transaction.categoryId }
+            List {
+                ForEach(Array(transactions.enumerated()), id: \ .element.id) { index, transaction in
+                    let category = categories.first { $0.id == transaction.categoryId }
 
-                        Group {
-                            if let category {
-                                TransactionRow(transaction: transactions[index], category: category)
-                            } else {
-                                HStack {
-                                    Text(Constants.categoryNotFound)
-                                    Spacer()
-                                    Text(Constants.idPrefix + "\(transaction.categoryId)")
-                                }
-                                .foregroundColor(.red)
+                    Group {
+                        if let category {
+                            let full = TransactionFull(transaction: transaction, account: mockAccount, category: category)
+                            TransactionRow(fullTransaction: full)
+                        } else {
+                            HStack {
+                                Text("Категория не найдена")
+                                Spacer()
+                                Text("ID: \(transaction.categoryId)")
                             }
+                            .foregroundColor(.red)
                         }
                     }
                 }
             }
+        }
     }
 
     return PreviewWrapper()

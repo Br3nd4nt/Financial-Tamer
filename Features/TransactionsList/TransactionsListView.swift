@@ -49,7 +49,7 @@ struct TransactionsListView: View {
                     }
                     Section(Constants.operationsTitle) {
                         ForEach(viewModel.transactionRows) { row in
-                            TransactionRow(transaction: row.transaction, category: row.category)
+                            TransactionRow(fullTransaction: row)
                         }
                     }
                 }
@@ -81,13 +81,13 @@ struct TransactionsListView: View {
     private enum Constants {
         static let incomeToday = "Доходы сегодня"
         static let outcomeToday = "Расходы сегодня"
-        static let vStackSpacing: CGFloat = 16
+        static let vStackSpacing: Double = 16
         static let sortTitle = "Выберите метод сортировки"
         static let totalTitle = "Всего"
         static let operationsTitle = "Операции"
         static let currencySymbol = "₽"
         static let toolbarIcon = "clock"
-        static let toolbarIconPadding: CGFloat = 8
+        static let toolbarIconPadding: Double = 8
     }
 }
 

@@ -17,3 +17,25 @@ struct Transaction: Identifiable {
     let createdAt: Date
     let updatedAt: Date
 }
+
+struct TransactionFull: Identifiable {
+    let id: Int
+    let account: BankAccount
+    let category: Category
+    let amount: Decimal
+    let transactionDate: Date
+    let comment: String
+    let createdAt: Date
+    let updatedAt: Date
+
+    init(transaction: Transaction, account: BankAccount, category: Category) {
+        self.id = transaction.id
+        self.account = account
+        self.category = category
+        self.amount = transaction.amount
+        self.transactionDate = transaction.transactionDate
+        self.comment = transaction.comment
+        self.createdAt = transaction.createdAt
+        self.updatedAt = transaction.updatedAt
+    }
+}

@@ -128,7 +128,7 @@ struct HistoryView: View {
 
     private enum Constants {
         static let title = "Моя история"
-        static let vStackSpacing: CGFloat = 16
+        static let vStackSpacing: Double = 16
         static let startTitle = "Начало"
         static let endTitle = "Конец"
         static let sortTitle = "Выберите метод сортировки"
@@ -138,10 +138,10 @@ struct HistoryView: View {
         static let dayLengthDay = 1
         static let dayLengthSecond = -1
         static let failedToCreateDate = "Failed to create a date"
-        static let datePickerOpacity: Double = 0.1
-        static let datePickerCornerRadius: CGFloat = 10
+        static let datePickerOpacity = 0.1
+        static let datePickerCornerRadius: Double = 10
         static let toolbarIcon = "document"
-        static let toolbarIconPadding: CGFloat = 8
+        static let toolbarIconPadding: Double = 8
     }
 }
 

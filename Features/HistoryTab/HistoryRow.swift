@@ -51,13 +51,13 @@ struct HistoryRow: View {
     }
 
     private enum Constants {
-        static let circleAspectRatio: CGFloat = 1
-        static let emojiPadding: CGFloat = 6
-        static let lineLimit: Int = 1
+        static let circleAspectRatio: Double = 1
+        static let emojiPadding: Double = 6
+        static let lineLimit = 1
         static let currencySymbol = "₽"
         static let chevronRight = "chevron.right"
-        static let chevronFontSize: CGFloat = 13
-        static let chevronPadding: CGFloat = 8
+        static let chevronFontSize: Double = 13
+        static let chevronPadding: Double = 8
         static let emptyString = ""
     }
 }
