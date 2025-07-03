@@ -8,16 +8,21 @@
 import SwiftUI
 import UIKit
 
+// i removed background color for rows because they look ugly...
 struct BalanceView: View {
     @StateObject private var viewModel = BalanceViewModel()
     @State private var showCurrencyMenu = false
     @FocusState private var isBalanceFieldFocused: Bool
-    @State private var balanceInput = ""
+    @State private var balanceInput = Constants.empty
+    @State private var editedCurrency: Currency?
+    @State private var initialBalance: String = Constants.empty
+    @State private var initialCurrency: Currency?
 
     @State private var spoilerIsOn = true
 
     private var balanceRow: some View {
         HStack {
+            Text(Constants.moneyBagSymbol)
             Text(Constants.balanceTitle)
             Spacer()
             if let account = viewModel.account {
@@ -28,27 +33,27 @@ struct BalanceView: View {
                             .focused($isBalanceFieldFocused)
                             .multilineTextAlignment(.trailing)
                             .onAppear {
-                                balanceInput = String(describing: account.balance)
+                                // Set up editing state
+                                let formatted = String(describing: account.balance)
+                                balanceInput = formatted
+                                initialBalance = formatted
+                                editedCurrency = account.currency
+                                initialCurrency = account.currency
                                 DispatchQueue.main.asyncAfter(deadline: .now() + Constants.balanceFieldFocusDelay) {
                                     isBalanceFieldFocused = true
                                 }
                             }
                             .onChange(of: balanceInput) { _, newValue in
-                                let filtered = newValue.filter { Constants.decimalCharacters.contains($0) }
+                                // Filter input, but do not update model
+                                var filtered = newValue.replacingOccurrences(of: Constants.comma, with: Constants.dot)
+                                filtered = filtered.filter { Constants.decimalCharacters.contains($0) }
+                                if let firstDotIndex = filtered.firstIndex(of: Constants.dot.first!) {
+                                    let beforeDot = filtered[..<filtered.index(after: firstDotIndex)]
+                                    let afterDot = filtered[filtered.index(after: firstDotIndex)...].replacingOccurrences(of: Constants.dot, with: Constants.empty)
+                                    filtered = String(beforeDot) + afterDot
+                                }
                                 if filtered != newValue {
                                     balanceInput = filtered
-                                }
-                                if let newDecimal = Decimal(string: filtered) {
-                                    let updated = BankAccount(
-                                        id: account.id,
-                                        userId: account.userId,
-                                        name: account.name,
-                                        balance: newDecimal,
-                                        currency: account.currency,
-                                        createdAt: account.createdAt,
-                                        updatedAt: account.updatedAt
-                                    )
-                                    Task { await viewModel.updateAccount(updated) }
                                 }
                             }
                             .transition(.opacity)
@@ -60,7 +65,7 @@ struct BalanceView: View {
                 }
                 .animation(.default, value: viewModel.state)
             } else {
-                ProgressView()
+                ProgressView(Constants.loading)
             }
         }
         .contentShape(Rectangle())
@@ -78,7 +83,7 @@ struct BalanceView: View {
             Text(Constants.currencyTitle)
             Spacer()
             if let account = viewModel.account {
-                Text(account.currency.symbol)
+                Text((editedCurrency ?? account.currency).symbol)
                 if viewModel.state == .redacting {
                     Image(systemName: Constants.chevronRight)
                         .font(.system(size: Constants.chevronFontSize))
@@ -86,7 +91,7 @@ struct BalanceView: View {
                         .transition(.opacity)
                 }
             } else {
-                ProgressView()
+                ProgressView(Constants.loading)
             }
         }
         .contentShape(Rectangle())
@@ -102,12 +107,6 @@ struct BalanceView: View {
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: Constants.vStackSpacing) {
-                Text(Constants.title)
-                    .font(.largeTitle)
-                    .bold()
-                    .padding(.horizontal)
-                    .padding(.top)
-
                 List {
                     Section {
                         balanceRow
@@ -134,14 +133,11 @@ struct BalanceView: View {
             .confirmationDialog(Constants.currencyTitle, isPresented: $showCurrencyMenu, titleVisibility: .visible) {
                 ForEach(Currency.allCases) { option in
                     Button(option.displayName) {
-                        if var account = viewModel.account {
-                            account.currency = option
-                            Task { await viewModel.updateAccount(account) }
-                        }
+                        editedCurrency = option
                     }
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle(Constants.title)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(
@@ -164,14 +160,26 @@ struct BalanceView: View {
             }
             .onChange(of: viewModel.state) { _, newState in
                 if newState == .redacting, let account = viewModel.account {
-                    balanceInput = String(describing: account.balance)
+                    let formatted = String(describing: account.balance)
+                    balanceInput = formatted
+                    initialBalance = formatted
+                    editedCurrency = account.currency
+                    initialCurrency = account.currency
                 }
                 if newState == .viewing {
                     isBalanceFieldFocused = false
+                    if viewModel.account != nil {
+                        if balanceInput != initialBalance, let newDecimal = Decimal(string: balanceInput) {
+                            Task { await viewModel.updateBalance(newDecimal) }
+                        }
+                        if let edited = editedCurrency, edited != initialCurrency {
+                            Task { await viewModel.updateCurrency(edited) }
+                        }
+                    }
                 }
             }
             .onShake {
-                spoilerIsOn = false
+                spoilerIsOn.toggle()
             }
         }
     }
@@ -180,6 +188,7 @@ struct BalanceView: View {
         static let title = "Мой счёт"
         static let vStackSpacing: Double = 16
         static let balanceTitle = "Баланс"
+        static let moneyBagSymbol = "💰"
         static let currencyTitle = "Валюта"
         static let chevronRight = "chevron.right"
         static let chevronFontSize: Double = 13
@@ -188,6 +197,10 @@ struct BalanceView: View {
         static let dragMinimumDistance: Double = 20
         static let balanceFieldFocusDelay = 0.1
         static let decimalCharacters = "0123456789."
+        static let comma = ","
+        static let dot = "."
+        static let empty = ""
+        static let loading = "Загрузка..."
     }
 }
 
