@@ -8,11 +8,12 @@
 import Foundation
 
 final class TransactionFileCache {
+    static let shared = TransactionFileCache(filename: Constants.defaultFilename)!
     private(set) var transactions: [Transaction] = []
     private let filename: String
     private let fileURL: URL
 
-    init?(filename: String) {
+    private init?(filename: String) {
         self.filename = filename
 
         guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
@@ -70,5 +71,9 @@ final class TransactionFileCache {
         case duplicateTransaction
         case transactionNotFound
         case fileSaveError
+    }
+
+    private enum Constants {
+        static let defaultFilename = "default_transactions.json"
     }
 }

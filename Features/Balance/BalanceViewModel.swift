@@ -20,7 +20,7 @@ final class BalanceViewModel: ObservableObject {
     private let bankAccountsService: BankAccountsProtocol
     private let userId = 1
 
-    init(bankAccountsService: BankAccountsProtocol = BankAccountsServiceMock()) {
+    init(bankAccountsService: BankAccountsProtocol = BankAccountsServiceMock.shared) {
         self.bankAccountsService = bankAccountsService
     }
 

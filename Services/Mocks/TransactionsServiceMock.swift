@@ -8,6 +8,8 @@
 import Foundation
 
 final class TransactionsServiceMock: TransactionsProtocol {
+    static let shared = TransactionsServiceMock()
+    private init() {}
     private var mockTransactions: [Transaction] = [
         // 💸 Зарплата (income)
         Transaction(
@@ -111,7 +113,7 @@ final class TransactionsServiceMock: TransactionsProtocol {
             updatedAt: .now
         ),
 
-        // 🏎️ Машина (outcome)
+        // ��️ Машина (outcome)
         Transaction(
             id: 10,
             accountId: 1,

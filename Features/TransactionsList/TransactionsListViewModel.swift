@@ -46,8 +46,8 @@ final class TransactionsListViewModel: ObservableObject {
 
     init(
         direction: Direction,
-        transactionsProtocol: TransactionsProtocol = TransactionsServiceMock(),
-        categoriesProtocol: CategoriesProtocol = CategoriesServiceMock()
+        transactionsProtocol: TransactionsProtocol = TransactionsServiceMock.shared,
+        categoriesProtocol: CategoriesProtocol = CategoriesServiceMock.shared
     ) {
         self.direction = direction
         self.transactionsProtocol = transactionsProtocol

@@ -6,6 +6,8 @@
 //
 
 final class CategoriesServiceMock: CategoriesProtocol {
+    static let shared = CategoriesServiceMock()
+    private init() {}
     private var mockCategories: [Category] = [
         Category( id: 1, name: "Зарплата", emoji: Character("💸"), direction: .income ),
         Category( id: 2, name: "Подработка", emoji: Character("🤑"), direction: .income ),
