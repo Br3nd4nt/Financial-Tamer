@@ -102,7 +102,7 @@ struct HistoryView: View {
                     }
                     Section(Constants.operationsTitle) {
                         ForEach(viewModel.transactionRows) { row in
-                            HistoryRow(transaction: row.transaction, category: row.category)
+                            HistoryRow(fullTransaction: row)
                         }
                     }
                 }

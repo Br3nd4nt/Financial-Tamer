@@ -16,12 +16,6 @@ struct BalanceView: View {
 
     @State private var spoilerIsOn = true
 
-    private func displayCurrencySymbol(for currency: String) -> String {
-        Currency.allCases.first {
-            $0.rawValue == currency || $0.symbol == currency
-        }?.symbol ?? currency
-    }
-
     private var balanceRow: some View {
         HStack {
             Text(Constants.balanceTitle)
@@ -32,6 +26,7 @@ struct BalanceView: View {
                         TextField(Constants.balanceTitle, text: $balanceInput)
                             .keyboardType(.decimalPad)
                             .focused($isBalanceFieldFocused)
+                            .multilineTextAlignment(.trailing)
                             .onAppear {
                                 balanceInput = String(describing: account.balance)
                                 DispatchQueue.main.asyncAfter(deadline: .now() + Constants.balanceFieldFocusDelay) {
@@ -58,7 +53,7 @@ struct BalanceView: View {
                             }
                             .transition(.opacity)
                     } else {
-                        Text(account.balance.formattedWithSeparator(currencySymbol: displayCurrencySymbol(for: account.currency)))
+                        Text(account.balance.formattedWithSeparator(currencySymbol: account.currency.symbol))
                             .spoiler(isOn: $spoilerIsOn)
                             .transition(.opacity)
                     }
@@ -74,7 +69,7 @@ struct BalanceView: View {
                 isBalanceFieldFocused = true
             }
         }
-        .listRowBackground(viewModel.state == .viewing ? .activeTab : Color(.systemBackground))
+//        .listRowBackground(viewModel.state == .viewing ? .activeTab : Color(.systemBackground))
         .animation(.default, value: viewModel.state)
     }
 
@@ -83,14 +78,7 @@ struct BalanceView: View {
             Text(Constants.currencyTitle)
             Spacer()
             if let account = viewModel.account {
-//                Text(displayCurrencySymbol(for: ForEach(Currency.allCases, id: \.self) { option in
-//                    Button(option.displayName) {
-//                        if var account = viewModel.account {
-//                            account.currency = option.rawValue
-//                            Task {await viewModel.updateAccount(account)}
-//                        }
-//                    }
-//                }account.currency))
+                Text(account.currency.symbol)
                 if viewModel.state == .redacting {
                     Image(systemName: Constants.chevronRight)
                         .font(.system(size: Constants.chevronFontSize))
@@ -107,7 +95,7 @@ struct BalanceView: View {
                 showCurrencyMenu = true
             }
         }
-        .listRowBackground(viewModel.state == .viewing ? .categoryBackground : Color(.systemBackground))
+//        .listRowBackground(viewModel.state == .viewing ? .categoryBackground : Color(.systemBackground))
         .animation(.default, value: viewModel.state)
     }
 
@@ -147,7 +135,7 @@ struct BalanceView: View {
                 ForEach(Currency.allCases) { option in
                     Button(option.displayName) {
                         if var account = viewModel.account {
-                            account.currency = option.rawValue
+                            account.currency = option
                             Task { await viewModel.updateAccount(account) }
                         }
                     }
@@ -172,9 +160,7 @@ struct BalanceView: View {
                 }
             }
             .task {
-                Task {
-                    await viewModel.loadAccount()
-                }
+                await viewModel.loadAccount()
             }
             .onChange(of: viewModel.state) { _, newState in
                 if newState == .redacting, let account = viewModel.account {

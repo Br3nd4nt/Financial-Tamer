@@ -94,19 +94,19 @@ struct TransactionRow: View {
                 updatedAt: Date.now
             )
         ]
-        private var mockAccount: BankAccount = BankAccount(
+        private var mockAccount = BankAccount(
             id: 1,
             userId: 1,
             name: "My account",
-            balance: 10000,
-            currency: "RUB",
+            balance: 10_000,
+            currency: .rub,
             createdAt: Date.now,
             updatedAt: Date.now
         )
 
         var body: some View {
             List {
-                ForEach(Array(transactions.enumerated()), id: \ .element.id) { index, transaction in
+                ForEach(Array(transactions.enumerated()), id: \ .element.id) { _, transaction in
                     let category = categories.first { $0.id == transaction.categoryId }
 
                     Group {

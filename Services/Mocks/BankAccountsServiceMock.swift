@@ -15,7 +15,7 @@ final class BankAccountsServiceMock: BankAccountsProtocol {
         userId: 1,
         name: "My account",
         balance: 10_003.7,
-        currency: "USD",
+        currency: .dollar,
         createdAt: Date.now,
         updatedAt: Date.now
     )

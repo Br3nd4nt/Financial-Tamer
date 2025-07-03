@@ -8,8 +8,7 @@
 import SwiftUI
 
 struct HistoryRow: View {
-    var transaction: Transaction
-    var category: Category
+    var fullTransaction: TransactionFull
 
     var body: some View {
         HStack {
@@ -17,19 +16,19 @@ struct HistoryRow: View {
                 Circle()
                     .fill(.categoryBackground)
                     .aspectRatio(Constants.circleAspectRatio, contentMode: .fit)
-                Text("\(category.emoji)")
+                Text("\(fullTransaction.category.emoji)")
                     .padding(Constants.emojiPadding)
             }
             .fixedSize(horizontal: true, vertical: true)
 
-            if transaction.comment.isEmpty {
-                Text(category.name)
+            if fullTransaction.comment.isEmpty {
+                Text(fullTransaction.category.name)
                     .lineLimit(Constants.lineLimit)
             } else {
                 VStack(alignment: .leading) {
-                    Text(category.name)
+                    Text(fullTransaction.category.name)
                         .lineLimit(Constants.lineLimit)
-                    Text(transaction.comment)
+                    Text(fullTransaction.comment)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .lineLimit(Constants.lineLimit)
@@ -38,8 +37,8 @@ struct HistoryRow: View {
             Spacer()
 
             VStack {
-                Text(transaction.amount.formattedWithSeparator(currencySymbol: Constants.currencySymbol))
-                Text(transaction.transactionDate.timeString(format: .twentyFour))
+                Text(fullTransaction.amount.formattedWithSeparator(currencySymbol: fullTransaction.account.currency.symbol))
+                Text(fullTransaction.transactionDate.timeString(format: .twentyFour))
             }
             NavigationLink(Constants.emptyString) {
                 Image(systemName: Constants.chevronRight)
@@ -101,15 +100,25 @@ struct HistoryRow: View {
                 updatedAt: Date.now
             )
         ]
+        private var mockAccount = BankAccount(
+            id: 1,
+            userId: 1,
+            name: "My account",
+            balance: 10_000,
+            currency: .rub,
+            createdAt: Date.now,
+            updatedAt: Date.now
+        )
 
         var body: some View {
             List {
-                ForEach(Array(transactions.enumerated()), id: \.element.id) { index, transaction in
+                ForEach(Array(transactions.enumerated()), id: \.element.id) { _, transaction in
                     let category = categories.first { $0.id == transaction.categoryId }
 
                     Group {
                         if let category {
-                            HistoryRow(transaction: transactions[index], category: category)
+                            let full = TransactionFull(transaction: transaction, account: mockAccount, category: category)
+                            HistoryRow(fullTransaction: full)
                         } else {
                             HStack {
                                 Text("Категория не найдена")
