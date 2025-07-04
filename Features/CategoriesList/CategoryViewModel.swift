@@ -7,7 +7,6 @@
 
 import SwiftUI
 import Foundation
-import Fuse
 
 @MainActor
 final class CategoryViewModel: ObservableObject {
@@ -16,8 +15,8 @@ final class CategoryViewModel: ObservableObject {
 
     private let categoryService: CategoriesProtocol
 
-    private let fuse = Fuse(threshold: 0.4)
-    private var fusePatterns: [String: Fuse.Pattern] = [:]
+    private var patterns: [String: Pattern] = [:]
+    private let threshold = 0.4
 
     init(categoryService: CategoriesProtocol = CategoriesServiceMock.shared) {
         self.categoryService = categoryService
@@ -57,31 +56,29 @@ final class CategoryViewModel: ObservableObject {
 
     // MARK: - private helpers
 
-    private func getPattern(for query: String) -> Fuse.Pattern? {
-        if let cachedPattern = fusePatterns[query] {
+    private func getPattern(for query: String) -> Pattern? {
+        if let cachedPattern = patterns[query] {
             return cachedPattern
         }
 
-        if let newPattern = fuse.createPattern(from: query) {
-            fusePatterns[query] = newPattern
-            return newPattern
-        }
-
-        return nil
+        let newPattern = Pattern(query)
+        patterns[query] = newPattern
+        return newPattern
     }
 
-    private func searchCategories(with pattern: Fuse.Pattern) -> [Category] {
+    private func searchCategories(with pattern: Pattern) -> [Category] {
         let searchResults: [(category: Category, score: Double)] = allCategories.compactMap { category in
-            guard let result = fuse.search(pattern, in: category.name) else {
-                return nil
+            let result = fuzzyMatch(pattern, in: category.name)
+            if result.isMatch && result.score >= threshold {
+                return (category: category, score: result.score)
             }
-            return (category: category, score: result.score)
+            return nil
         }
 
         let sortedResults = searchResults.sorted { first, second in
-            first.score < second.score
+            first.score > second.score
         }
-
+        print(sortedResults)
         return sortedResults.map(\.category)
     }
 }

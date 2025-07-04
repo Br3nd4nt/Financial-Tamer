@@ -6,10 +6,6 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		069214962E175D4800F76604 /* Fuse in Frameworks */ = {isa = PBXBuildFile; productRef = 069214952E175D4800F76604 /* Fuse */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXContainerItemProxy section */
 		068636282DF7413F001F2E7F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -68,7 +64,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				069214962E175D4800F76604 /* Fuse in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -131,7 +126,6 @@
 			);
 			name = "Financial Tamer";
 			packageProductDependencies = (
-				069214952E175D4800F76604 /* Fuse */,
 			);
 			productName = "Financial Tamer";
 			productReference = 068636102DF74110001F2E7F /* Financial Tamer.app */;
@@ -190,7 +184,6 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				06AA34242E15FCA700615099 /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */,
-				069214942E175D4800F76604 /* XCRemoteSwiftPackageReference "fuse-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 068636112DF74110001F2E7F /* Products */;
@@ -515,14 +508,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		069214942E175D4800F76604 /* XCRemoteSwiftPackageReference "fuse-swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/krisk/fuse-swift";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.4.0;
-			};
-		};
 		06AA34242E15FCA700615099 /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SimplyDanny/SwiftLintPlugins";
@@ -532,14 +517,6 @@
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		069214952E175D4800F76604 /* Fuse */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 069214942E175D4800F76604 /* XCRemoteSwiftPackageReference "fuse-swift" */;
-			productName = Fuse;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 068636082DF74110001F2E7F /* Project object */;
 }
