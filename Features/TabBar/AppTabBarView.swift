@@ -9,9 +9,9 @@ import SwiftUI
 
 struct AppTabBarView: View {
     enum Tab: Hashable {
-        case outcome, income, balance, articles, settings
+        case outcome, income, balance, categories, settings
     }
-    @State private var selectedTab: Tab = .balance
+    @State private var selectedTab: Tab = .categories
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -33,11 +33,12 @@ struct AppTabBarView: View {
                 }
                 .tint(.accent)
                 .tag(Tab.balance)
-            Text(Constants.articlesTitle)
+            CategoryView()
                 .tabItem {
                     Label(Constants.articlesTitle, systemImage: Constants.articlesIcon)
                 }
-                .tag(Tab.articles)
+                .tag(Tab.categories)
+                .tint(.accent)
             Text(Constants.settingsTitle)
                 .tabItem {
                     Label(Constants.settingsTitle, systemImage: Constants.settingsIcon)
