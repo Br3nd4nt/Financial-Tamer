@@ -38,6 +38,12 @@ final class AnalyticsViewController: UIViewController {
         headerView.startDatePicker!.date = viewModel.dayStart
         super.init(nibName: nil, bundle: nil)
         viewModel.onReloadData = reloadData
+        viewModel.setStartDateForPicker = { date in
+            self.headerView.startDatePicker?.date = date
+        }
+        viewModel.setEndDateForPicker = { date in
+            self.headerView.endDatePicker?.date = date
+        }
     }
 
     @available(*, unavailable)

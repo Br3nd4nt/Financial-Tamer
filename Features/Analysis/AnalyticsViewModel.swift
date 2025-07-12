@@ -33,6 +33,8 @@ final class AnalyticsViewModel: ObservableObject {
     private let bankAccountsProtocol: BankAccountsProtocol
 
     var onReloadData: (() -> Void)?
+    var setStartDateForPicker: ((Date) -> Void)?
+    var setEndDateForPicker: ((Date) -> Void)?
     
     init(
         direction: Direction,
@@ -130,11 +132,19 @@ final class AnalyticsViewModel: ObservableObject {
 
     @objc func startDateChanged(_ sender: UIDatePicker) {
         dayStart = sender.date
+        if dayEnd < dayStart {
+            dayEnd = dayStart
+            setEndDateForPicker?(dayEnd)
+        }
         reloadData()
     }
 
     @objc func endDateChanged(_ sender: UIDatePicker) {
         dayEnd = sender.date
+        if dayEnd < dayStart {
+            dayStart = dayEnd
+            setStartDateForPicker?(dayStart)
+        }
         reloadData()
     }
 }
