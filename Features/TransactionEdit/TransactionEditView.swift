@@ -29,14 +29,26 @@ struct TransactionEditView: View {
                 HStack {
                     Text("Сумма")
                     Spacer()
-                    TextField("0", value: $viewModel.amount, format: .number)
+                    TextField("0", text: $viewModel.amountString)
                         .keyboardType(.decimalPad)
                         .multilineTextAlignment(.trailing)
+                        .onChange(of: viewModel.amountString) { _, newValue in
+                            var filtered = newValue.replacingOccurrences(of: ",", with: ".")
+                            filtered = filtered.filter { "0123456789.".contains($0) }
+                            if let firstDotIndex = filtered.firstIndex(of: ".".first!) {
+                                let beforeDot = filtered[..<filtered.index(after: firstDotIndex)]
+                                let afterDot = filtered[filtered.index(after: firstDotIndex)...].replacingOccurrences(of: ".", with: "")
+                                filtered = String(beforeDot) + afterDot
+                            }
+                            if filtered != newValue {
+                                viewModel.amountString = filtered
+                            }
+                        }
                 }
                 HStack {
                     Text("Дата")
                     Spacer()
-                    DatePicker("", selection: $viewModel.date, displayedComponents: .date)
+                    DatePicker("", selection: $viewModel.date, in: ...Date(), displayedComponents: .date)
                         .labelsHidden()
                         .datePickerStyle(.compact)
                 }

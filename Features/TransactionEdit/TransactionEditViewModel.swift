@@ -13,6 +13,7 @@ final class TransactionEditViewModel: ObservableObject {
     @Published var amount: Decimal = 0
     @Published var date = Date()
     @Published var comment = ""
+    @Published var amountString = ""
 
     @Published var categories: [Category] = []
     @Published var isEditing = false
@@ -37,6 +38,7 @@ final class TransactionEditViewModel: ObservableObject {
             self.isEditing = true
             self.category = transaction.category
             self.amount = transaction.amount
+            self.amountString = transaction.amount.formatted()
             self.date = transaction.transactionDate
             self.comment = transaction.comment
         } else {
@@ -44,6 +46,7 @@ final class TransactionEditViewModel: ObservableObject {
             self.isEditing = false
             self.category = nil
             self.amount = 0
+            self.amountString = ""
             self.date = Date()
             self.comment = ""
         }
@@ -63,13 +66,12 @@ final class TransactionEditViewModel: ObservableObject {
             self.category = loadedCategories.first { $0.id == current.id }
         }
     }
-    
+
     func deleteTransaction() async {
-        
     }
-    
+
     func saveTransaction() async {
-        guard let category = category, amount > 0 else { return }
+        guard let category, amount > 0 else { return }
         if isEditing {
             // обновление существующей транзакции (реализовать при необходимости)
         } else {
