@@ -10,13 +10,14 @@ import SwiftUI
 struct HistoryView: View {
     @StateObject private var viewModel: HistoryViewModel
 
+    @State private var showAnalytics = false
+
     private let direction: Direction
     private let maximumDate: Date
     private let dayLength = DateComponents(day: Constants.dayLengthDay, second: Constants.dayLengthSecond)
 
     init(direction: Direction) {
         self.direction = direction
-
         let dayStart: Date = Calendar.current.startOfDay(for: Date())
         let dayEnd: Date = {
             guard let date = Calendar.current.date(byAdding: DateComponents(day: Constants.dayLengthDay, second: Constants.dayLengthSecond), to: Calendar.current.startOfDay(for: Date())) else {
@@ -25,104 +26,98 @@ struct HistoryView: View {
             }
             return date
         }()
-
         maximumDate = dayEnd
-
         _viewModel = StateObject(
             wrappedValue: HistoryViewModel(direction: direction, startDate: dayStart, endDate: dayEnd)
         )
     }
 
     var body: some View {
-        NavigationStack {
-            VStack(alignment: .leading, spacing: Constants.vStackSpacing) {
-                Text(Constants.title)
-                    .font(.largeTitle)
-                    .bold()
-                    .padding(.horizontal)
-                    .navigationTitle(Constants.title)
-
-                List {
-                    Section {
-                        HStack {
-                            Text(Constants.startTitle)
-                            Spacer()
-                            DatePicker(selection: $viewModel.dayStart, in: ...maximumDate, displayedComponents: .date) {}
-                                .onChange(of: viewModel.dayStart) {
-                                    if viewModel.dayEnd < viewModel.dayStart {
-                                        guard let date = Calendar.current.date(byAdding: dayLength, to: viewModel.dayStart) else {
-                                            print(Constants.failedToCreateDate)
-                                            return
-                                        }
-                                        viewModel.dayEnd = date
+        VStack(alignment: .leading, spacing: Constants.vStackSpacing) {
+            List {
+                Section {
+                    HStack {
+                        Text(Constants.startTitle)
+                        Spacer()
+                        DatePicker(selection: $viewModel.dayStart, in: ...maximumDate, displayedComponents: .date) {}
+                            .onChange(of: viewModel.dayStart) {
+                                if viewModel.dayEnd < viewModel.dayStart {
+                                    guard let date = Calendar.current.date(byAdding: dayLength, to: viewModel.dayStart) else {
+                                        print(Constants.failedToCreateDate)
+                                        return
                                     }
-                                    Task {
-                                        await viewModel.loadTransactions()
-                                    }
+                                    viewModel.dayEnd = date
                                 }
-                                .background(
-                                    Color.activeTab.opacity(Constants.datePickerOpacity)
-                                        .clipShape(RoundedRectangle(cornerRadius: Constants.datePickerCornerRadius))
-                                )
-                        }
-
-                        HStack {
-                            Text(Constants.endTitle)
-                            Spacer()
-
-                            DatePicker(selection: $viewModel.dayEnd, in: ...maximumDate, displayedComponents: .date) {}
-                                .onChange(of: viewModel.dayEnd) {
-                                    if viewModel.dayEnd < viewModel.dayStart {
-                                        viewModel.dayStart = Calendar.current.startOfDay(for: viewModel.dayEnd)
-                                    }
-                                    Task {
-                                        await viewModel.loadTransactions()
-                                    }
-                                }
-                                .background(
-                                    Color.activeTab.opacity(Constants.datePickerOpacity)
-                                        .clipShape(RoundedRectangle(cornerRadius: Constants.datePickerCornerRadius))
-                                )
-                        }
-                        VStack(alignment: .leading) {
-                            Text(Constants.sortTitle)
-                                .font(.callout)
-                            Picker(Constants.sortTitle, selection: $viewModel.sortOption) {
-                                ForEach(TransactionSortOption.allCases, id: \.self) {
-                                    Text("\($0.rawValue)")
+                                Task {
+                                    await viewModel.loadTransactions()
                                 }
                             }
-                            .pickerStyle(.segmented)
-                        }
-                        HStack {
-                            Text(Constants.totalTitle)
-                            Spacer()
-                            Text(viewModel.total.formattedWithSeparator(currencySymbol: Constants.currencySymbol))
-                        }
+                            .background(
+                                Color.activeTab.opacity(Constants.datePickerOpacity)
+                                    .clipShape(RoundedRectangle(cornerRadius: Constants.datePickerCornerRadius))
+                            )
                     }
-                    Section(Constants.operationsTitle) {
-                        ForEach(viewModel.transactionRows) { row in
-                            HistoryRow(fullTransaction: row)
+
+                    HStack {
+                        Text(Constants.endTitle)
+                        Spacer()
+                        DatePicker(selection: $viewModel.dayEnd, in: ...maximumDate, displayedComponents: .date) {}
+                            .onChange(of: viewModel.dayEnd) {
+                                if viewModel.dayEnd < viewModel.dayStart {
+                                    viewModel.dayStart = Calendar.current.startOfDay(for: viewModel.dayEnd)
+                                }
+                                Task {
+                                    await viewModel.loadTransactions()
+                                }
+                            }
+                            .background(
+                                Color.activeTab.opacity(Constants.datePickerOpacity)
+                                    .clipShape(RoundedRectangle(cornerRadius: Constants.datePickerCornerRadius))
+                            )
+                    }
+                    VStack(alignment: .leading) {
+                        Text(Constants.sortTitle)
+                            .font(.callout)
+                        Picker(Constants.sortTitle, selection: $viewModel.sortOption) {
+                            ForEach(TransactionSortOption.allCases, id: \ .self) {
+                                Text("\($0.rawValue)")
+                            }
                         }
+                        .pickerStyle(.segmented)
+                    }
+                    HStack {
+                        Text(Constants.totalTitle)
+                        Spacer()
+                        Text(viewModel.total.formattedWithSeparator(currencySymbol: Constants.currencySymbol))
+                    }
+                }
+                Section(Constants.operationsTitle) {
+                    ForEach(viewModel.transactionRows) { row in
+                        HistoryRow(fullTransaction: row)
                     }
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(
-                        action: {},
-                        label: {
-                            Image(systemName: Constants.toolbarIcon)
-                                .font(.headline)
-                                .padding(Constants.toolbarIconPadding)
-                        }
-                    )
-                }
+        }
+        .navigationTitle(Constants.title)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(
+                    action: {
+                        showAnalytics = true
+                    },
+                    label: {
+                        Image(systemName: Constants.toolbarIcon)
+                            .font(.headline)
+                            .padding(Constants.toolbarIconPadding)
+                    }
+                )
             }
-            .task {
-                await viewModel.loadTransactions()
-            }
+        }
+        .task {
+            await viewModel.loadTransactions()
+        }
+        .navigationDestination(isPresented: $showAnalytics) {
+            AnalyticsViewControllerWrapper(direction)
         }
     }
 

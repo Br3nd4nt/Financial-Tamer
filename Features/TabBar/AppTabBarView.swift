@@ -11,7 +11,7 @@ struct AppTabBarView: View {
     enum Tab: Hashable {
         case outcome, income, balance, categories, settings
     }
-    @State private var selectedTab: Tab = .categories
+    @State private var selectedTab: Tab = .income
 
     var body: some View {
         TabView(selection: $selectedTab) {

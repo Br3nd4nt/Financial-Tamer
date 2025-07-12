@@ -24,10 +24,10 @@ struct TransactionsListView: View {
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: Constants.vStackSpacing) {
-                Text(direction == .income ? Constants.incomeToday : Constants.outcomeToday)
-                    .font(.largeTitle)
-                    .bold()
-                    .padding(.horizontal)
+//                Text(direction == .income ? Constants.incomeToday : Constants.outcomeToday)
+//                    .font(.largeTitle)
+//                    .bold()
+//                    .padding(.horizontal)
 
                 List {
                     Section {
@@ -54,7 +54,8 @@ struct TransactionsListView: View {
                     }
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
+//            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle(direction == .income ? Constants.incomeToday : Constants.outcomeToday)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(

@@ -11,42 +11,38 @@ struct HistoryRow: View {
     var fullTransaction: TransactionFull
 
     var body: some View {
-        HStack {
-            ZStack {
-                Circle()
-                    .fill(.categoryBackground)
-                    .aspectRatio(Constants.circleAspectRatio, contentMode: .fit)
-                Text("\(fullTransaction.category.emoji)")
-                    .padding(Constants.emojiPadding)
-            }
-            .fixedSize(horizontal: true, vertical: true)
+        NavigationLink(destination: EmptyView()) {
+            HStack {
+                ZStack {
+                    Circle()
+                        .fill(.categoryBackground)
+                        .aspectRatio(Constants.circleAspectRatio, contentMode: .fit)
+                    Text("\(fullTransaction.category.emoji)")
+                        .padding(Constants.emojiPadding)
+                }
+                .fixedSize(horizontal: true, vertical: true)
 
-            if fullTransaction.comment.isEmpty {
-                Text(fullTransaction.category.name)
-                    .lineLimit(Constants.lineLimit)
-            } else {
-                VStack(alignment: .leading) {
+                if fullTransaction.comment.isEmpty {
                     Text(fullTransaction.category.name)
                         .lineLimit(Constants.lineLimit)
-                    Text(fullTransaction.comment)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(Constants.lineLimit)
+                } else {
+                    VStack(alignment: .leading) {
+                        Text(fullTransaction.category.name)
+                            .lineLimit(Constants.lineLimit)
+                        Text(fullTransaction.comment)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(Constants.lineLimit)
+                    }
+                }
+                Spacer()
+                VStack {
+                    Text(fullTransaction.amount.formattedWithSeparator(currencySymbol: fullTransaction.account.currency.symbol))
+                    Text(fullTransaction.transactionDate.timeString(format: .twentyFour))
                 }
             }
-            Spacer()
-
-            VStack {
-                Text(fullTransaction.amount.formattedWithSeparator(currencySymbol: fullTransaction.account.currency.symbol))
-                Text(fullTransaction.transactionDate.timeString(format: .twentyFour))
-            }
-            NavigationLink(Constants.emptyString) {
-                Image(systemName: Constants.chevronRight)
-                    .font(.system(size: Constants.chevronFontSize, weight: .bold))
-                    .foregroundColor(.secondary)
-                    .padding(.leading, Constants.chevronPadding)
-            }
         }
+        .contentShape(Rectangle())
     }
 
     private enum Constants {
