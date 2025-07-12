@@ -14,13 +14,13 @@ final class TransactionEditViewModel: ObservableObject {
     @Published var date = Date()
     @Published var comment = ""
     @Published var amountString = ""
-
     @Published var categories: [Category] = []
     @Published var isEditing = false
 
+    private var editingTransaction: TransactionFull?
     private let categoriesProtocol: CategoriesProtocol
     private let bankAccountsProtocol: BankAccountsProtocol
-    private var account: BankAccount?
+    private let direction: Direction?
 
     var canSave: Bool {
         category != nil && amount > 0
@@ -28,22 +28,24 @@ final class TransactionEditViewModel: ObservableObject {
 
     init(
         transaction: TransactionFull? = nil,
+        direction: Direction? = nil,
         categoriesProtocol: CategoriesProtocol = CategoriesServiceMock.shared,
         bankAccountsProtocol: BankAccountsProtocol = BankAccountsServiceMock.shared
     ) {
         self.categoriesProtocol = categoriesProtocol
         self.bankAccountsProtocol = bankAccountsProtocol
+        self.direction = direction
         if let transaction {
-            // Editing
             self.isEditing = true
+            self.editingTransaction = transaction
             self.category = transaction.category
             self.amount = transaction.amount
             self.amountString = transaction.amount.formatted()
             self.date = transaction.transactionDate
             self.comment = transaction.comment
         } else {
-            // Creating
             self.isEditing = false
+            self.editingTransaction = nil
             self.category = nil
             self.amount = 0
             self.amountString = ""
@@ -56,26 +58,49 @@ final class TransactionEditViewModel: ObservableObject {
     }
 
     func fetchCategories() async {
-        guard let loadedCategories = try? await categoriesProtocol.getCategories() else {
+        let loadedCategories: [Category]
+        if let direction {
+            loadedCategories = (try? await categoriesProtocol.getCategoriesDyDirection(direction: direction)) ?? []
+        } else {
+            loadedCategories = (try? await categoriesProtocol.getCategories()) ?? []
+        }
+        if loadedCategories.isEmpty {
             print("Failed to load categories")
             return
         }
         self.categories = loadedCategories
-        // Ensure the selected category is from the loaded array
         if let current = self.category {
             self.category = loadedCategories.first { $0.id == current.id }
         }
     }
 
-    func deleteTransaction() async {
-    }
-
     func saveTransaction() async {
-        guard let category, amount > 0 else { return }
+        guard let category, amount > 0 else {
+            return
+        }
         if isEditing {
-            // обновление существующей транзакции (реализовать при необходимости)
+            guard let old = editingTransaction, let account = try? await bankAccountsProtocol.getBankAccount(
+                userId: 1
+            ) else {
+                return
+            }
+            let updatedTransaction = Transaction(
+                id: old.id,
+                accountId: account.id,
+                categoryId: category.id,
+                amount: amount,
+                transactionDate: date,
+                comment: comment,
+                createdAt: old.createdAt,
+                updatedAt: Date()
+            )
+            _ = try? await TransactionsServiceMock.shared.updateTransaction(transaction: updatedTransaction)
         } else {
-            guard let account = try? await bankAccountsProtocol.getBankAccount(userId: 1) else { return }
+            guard let account = try? await bankAccountsProtocol.getBankAccount(
+                userId: 1
+            ) else {
+                return
+            }
             let newTransaction = Transaction(
                 id: Int.random(in: 1000...9999),
                 accountId: account.id,
@@ -89,8 +114,16 @@ final class TransactionEditViewModel: ObservableObject {
             _ = try? await TransactionsServiceMock.shared.createTransaction(transaction: newTransaction)
             self.category = nil
             self.amount = 0
+            self.amountString = ""
             self.date = Date()
             self.comment = ""
         }
+    }
+
+    func deleteTransaction() async {
+        guard let old = editingTransaction else {
+            return
+        }
+        _ = try? await TransactionsServiceMock.shared.deleteTransaction(id: old.id)
     }
 }

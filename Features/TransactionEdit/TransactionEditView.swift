@@ -10,9 +10,10 @@ import SwiftUI
 struct TransactionEditView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: TransactionEditViewModel
+    @State private var showAlert = false
 
-    init(transaction: TransactionFull? = nil) {
-        _viewModel = StateObject(wrappedValue: TransactionEditViewModel(transaction: transaction))
+    init(transaction: TransactionFull? = nil, direction: Direction? = nil) {
+        _viewModel = StateObject(wrappedValue: TransactionEditViewModel(transaction: transaction, direction: direction))
     }
 
     var body: some View {
@@ -23,7 +24,7 @@ struct TransactionEditView: View {
                         Text("Выберите категорию").tag(nil as Category?)
                     }
                     ForEach(viewModel.categories) { category in
-                        Text(category.name).tag(category as Category?)
+                        Text("\(category.emoji) \(category.name)").tag(category as Category?)
                     }
                 }
                 HStack {
@@ -89,17 +90,30 @@ struct TransactionEditView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(viewModel.isEditing ? "Сохранить" : "Создать") {
-                        Task {
-                            await viewModel.saveTransaction()
-                            dismiss()
+                        let separator = Locale.current.decimalSeparator ?? "."
+                        let filtered = viewModel.amountString.replacingOccurrences(of: separator, with: ".")
+                        if let decimal = Decimal(string: filtered) {
+                            viewModel.amount = decimal
+                        } else {
+                            viewModel.amount = 0
+                        }
+                        if viewModel.canSave {
+                            Task {
+                                await viewModel.saveTransaction()
+                                dismiss()
+                            }
+                        } else {
+                            showAlert = true
                         }
                     }
-                    .disabled(!viewModel.canSave)
                 }
             }
         }
         .task {
             await viewModel.fetchCategories()
+        }
+        .alert("Пожалуйста, заполните все поля", isPresented: $showAlert) {
+            Button("OK", role: .cancel) { }
         }
     }
 }

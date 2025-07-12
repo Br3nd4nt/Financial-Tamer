@@ -82,7 +82,7 @@ struct TransactionsListView: View {
         .fullScreenCover(isPresented: $showCreateTransaction, onDismiss: {
             Task { await viewModel.loadTransactions() }
         }) {
-            TransactionEditView()
+            TransactionEditView(direction: direction)
         }
         .overlay(
             VStack {
