@@ -75,6 +75,7 @@ final class AnalyticsViewController: UIViewController {
             return
         }
         endDatePicker.addTarget(viewModel, action: #selector(viewModel.endDateChanged), for: .valueChanged)
+        headerView.selector.addTarget(viewModel, action: #selector(viewModel.sortOptionChanged), for: .valueChanged)
     }
 
     private func makeTable() {
@@ -141,8 +142,8 @@ extension AnalyticsViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        viewModel.categoryRows.count * 1000
-//        viewModel.categoryRows.count
+//        viewModel.categoryRows.count * 1000
+        viewModel.categoryRows.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

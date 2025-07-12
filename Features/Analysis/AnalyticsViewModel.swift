@@ -22,6 +22,12 @@ final class AnalyticsViewModel: ObservableObject {
         didSet { reloadData() }
     }
 
+    @Published var sortOption: TransactionSortOption = .byAmount {
+        didSet {
+            categoryRows.sort(by: sortCategories)
+        }
+    }
+
     private let direction: Direction
 
     private var rawTransactions: [Transaction] = []
@@ -35,7 +41,7 @@ final class AnalyticsViewModel: ObservableObject {
     var onReloadData: (() -> Void)?
     var setStartDateForPicker: ((Date) -> Void)?
     var setEndDateForPicker: ((Date) -> Void)?
-    
+
     init(
         direction: Direction,
         startDate: Date = Date(),
@@ -126,6 +132,7 @@ final class AnalyticsViewModel: ObservableObject {
     private func reloadData() {
         Task {
             await loadTransactions()
+            categoryRows.sort(by: sortCategories)
             onReloadData?()
         }
     }
@@ -146,5 +153,26 @@ final class AnalyticsViewModel: ObservableObject {
             setStartDateForPicker?(dayStart)
         }
         reloadData()
+    }
+    
+    @objc func sortOptionChanged(_ sender: UISegmentedControl) {
+        switch sender.selectedSegmentIndex {
+        case 0:
+            sortOption = .byDate
+        case 1:
+            sortOption = .byAmount
+        default: break
+        }
+        
+        reloadData()
+    }
+
+    private func sortCategories(_ lhs: CategoryAnalytics, _ rhs: CategoryAnalytics) -> Bool {
+        switch sortOption {
+        case .byDate:
+            return lhs.lastTransactionDate > rhs.lastTransactionDate
+        case .byAmount:
+            return lhs.percentage > rhs.percentage
+        }
     }
 }
