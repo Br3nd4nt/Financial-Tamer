@@ -15,11 +15,15 @@ final class AnalyticsViewModel: ObservableObject {
     @Published var transactionRows: [TransactionFull] = []
 
     @Published var dayStart: Date {
-        didSet { reloadData() }
+        didSet {
+            reloadData()
+        }
     }
 
     @Published var dayEnd: Date {
-        didSet { reloadData() }
+        didSet {
+            reloadData()
+        }
     }
 
     @Published var sortOption: TransactionSortOption = .byAmount {
@@ -55,8 +59,8 @@ final class AnalyticsViewModel: ObservableObject {
         self.transactionsProtocol = transactionsProtocol
         self.categoriesProtocol = categoriesProtocol
         self.bankAccountsProtocol = bankAccountsProtocol
-        self.dayStart = startDate
-        self.dayEnd = endDate
+        self.dayStart = startDate.startOfDay
+        self.dayEnd = endDate.endOfDay
         self.onReloadData = onReloadData
     }
 
@@ -138,32 +142,35 @@ final class AnalyticsViewModel: ObservableObject {
     }
 
     @objc func startDateChanged(_ sender: UIDatePicker) {
-        dayStart = sender.date
+        let pickedStart = sender.date.startOfDay
+        dayStart = pickedStart
         if dayEnd < dayStart {
-            dayEnd = dayStart
+            dayEnd = pickedStart.endOfDay
             setEndDateForPicker?(dayEnd)
         }
         reloadData()
     }
 
     @objc func endDateChanged(_ sender: UIDatePicker) {
-        dayEnd = sender.date
+        let pickedEnd = sender.date.endOfDay
+        dayEnd = pickedEnd
         if dayEnd < dayStart {
-            dayStart = dayEnd
+            dayStart = pickedEnd.startOfDay
             setStartDateForPicker?(dayStart)
         }
         reloadData()
     }
-    
+
     @objc func sortOptionChanged(_ sender: UISegmentedControl) {
         switch sender.selectedSegmentIndex {
         case 0:
             sortOption = .byDate
         case 1:
             sortOption = .byAmount
-        default: break
+        default:
+            break
         }
-        
+
         reloadData()
     }
 
