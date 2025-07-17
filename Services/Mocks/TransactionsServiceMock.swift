@@ -17,10 +17,10 @@ final class TransactionsServiceMock: TransactionsProtocol {
             accountId: 1,
             categoryId: 1,
             amount: 180_000,
-            transactionDate: .create(day: 16, month: 6, year: 2025),
+            transactionDate: .create(day: 10, month: 6, year: 2025),
             comment: "Основная зарплата",
-            createdAt: .now,
-            updatedAt: .now
+            createdAt: .create(day: 10, month: 6, year: 2025, hour: 9),
+            updatedAt: .create(day: 10, month: 6, year: 2025, hour: 9)
         ),
 
         // 🤑 Подработка (income)
@@ -31,18 +31,18 @@ final class TransactionsServiceMock: TransactionsProtocol {
             amount: 35_500,
             transactionDate: .create(day: 18, month: 6, year: 2025, hour: 15),
             comment: "Фриланс проект",
-            createdAt: .now,
-            updatedAt: .now
+            createdAt: .create(day: 18, month: 6, year: 2025, hour: 15),
+            updatedAt: .create(day: 18, month: 6, year: 2025, hour: 15)
         ),
         Transaction(
             id: 3,
             accountId: 1,
             categoryId: 2,
             amount: 12_000,
-            transactionDate: .create(day: 20, month: 6, year: 2025, hour: 10, minute: 30),
+            transactionDate: .create(day: 25, month: 6, year: 2025, hour: 10, minute: 30),
             comment: "Консультация",
-            createdAt: .now,
-            updatedAt: .now
+            createdAt: .create(day: 25, month: 6, year: 2025, hour: 10, minute: 30),
+            updatedAt: .create(day: 25, month: 6, year: 2025, hour: 10, minute: 30)
         ),
 
         // 🏠 Аренда квартиры (outcome)
@@ -51,10 +51,10 @@ final class TransactionsServiceMock: TransactionsProtocol {
             accountId: 1,
             categoryId: 3,
             amount: 75_000,
-            transactionDate: .create(day: 23, month: 6, year: 2025),
+            transactionDate: .create(day: 1, month: 7, year: 2025),
             comment: "Аренда за июль",
-            createdAt: .now,
-            updatedAt: .now
+            createdAt: .create(day: 1, month: 7, year: 2025, hour: 8),
+            updatedAt: .create(day: 1, month: 7, year: 2025, hour: 8)
         ),
 
         // 👔 Одежда (outcome)
@@ -65,18 +65,18 @@ final class TransactionsServiceMock: TransactionsProtocol {
             amount: 8500,
             transactionDate: .create(day: 19, month: 6, year: 2025, hour: 16),
             comment: "Куртка",
-            createdAt: .now,
-            updatedAt: .now
+            createdAt: .create(day: 19, month: 6, year: 2025, hour: 16),
+            updatedAt: .create(day: 19, month: 6, year: 2025, hour: 16)
         ),
         Transaction(
             id: 6,
             accountId: 1,
             categoryId: 4,
             amount: 4200,
-            transactionDate: .create(day: 21, month: 6, year: 2025, hour: 14, minute: 15),
+            transactionDate: .create(day: 2, month: 7, year: 2025, hour: 14, minute: 15),
             comment: "Футболки",
-            createdAt: .now,
-            updatedAt: .now
+            createdAt: .create(day: 2, month: 7, year: 2025, hour: 14, minute: 15),
+            updatedAt: .create(day: 2, month: 7, year: 2025, hour: 14, minute: 15)
         ),
 
         // 🐕 Питомцы (outcome)
@@ -85,20 +85,20 @@ final class TransactionsServiceMock: TransactionsProtocol {
             accountId: 1,
             categoryId: 5,
             amount: 3800,
-            transactionDate: .create(day: 23, month: 6, year: 2025, hour: 11),
-            comment: "Корм для Джэка",
-            createdAt: .now,
-            updatedAt: .now
+            transactionDate: .create(day: 5, month: 7, year: 2025, hour: 11),
+            comment: "Корм для Джека",
+            createdAt: .create(day: 5, month: 7, year: 2025, hour: 11),
+            updatedAt: .create(day: 5, month: 7, year: 2025, hour: 11)
         ),
         Transaction(
             id: 8,
             accountId: 1,
             categoryId: 5,
             amount: 2500,
-            transactionDate: .create(day: 22, month: 6, year: 2025, hour: 9),
+            transactionDate: .create(day: 8, month: 7, year: 2025, hour: 9),
             comment: "Игрушка для питомца",
-            createdAt: .now,
-            updatedAt: .now
+            createdAt: .create(day: 8, month: 7, year: 2025, hour: 9),
+            updatedAt: .create(day: 8, month: 7, year: 2025, hour: 9)
         ),
 
         // 😷 Медицина (outcome)
@@ -107,32 +107,32 @@ final class TransactionsServiceMock: TransactionsProtocol {
             accountId: 1,
             categoryId: 6,
             amount: 5000,
-            transactionDate: .create(day: 16, month: 6, year: 2025, hour: 17, minute: 45),
+            transactionDate: .create(day: 10, month: 7, year: 2025, hour: 17, minute: 45),
             comment: "Прием у терапевта",
-            createdAt: .now,
-            updatedAt: .now
+            createdAt: .create(day: 10, month: 7, year: 2025, hour: 17, minute: 45),
+            updatedAt: .create(day: 10, month: 7, year: 2025, hour: 17, minute: 45)
         ),
 
-        // ��️ Машина (outcome)
+        // 🏎️ Машина (outcome)
         Transaction(
             id: 10,
             accountId: 1,
             categoryId: 7,
             amount: 15_000,
-            transactionDate: .create(day: 20, month: 6, year: 2025, hour: 8),
+            transactionDate: .create(day: 11, month: 7, year: 2025, hour: 8),
             comment: "Заправка бензина",
-            createdAt: .now,
-            updatedAt: .now
+            createdAt: .create(day: 11, month: 7, year: 2025, hour: 8),
+            updatedAt: .create(day: 11, month: 7, year: 2025, hour: 8)
         ),
         Transaction(
             id: 11,
             accountId: 1,
             categoryId: 7,
             amount: 7300,
-            transactionDate: .create(day: 21, month: 6, year: 2025, hour: 13),
+            transactionDate: .create(day: 12, month: 7, year: 2025, hour: 13),
             comment: "Мойка автомобиля",
-            createdAt: .now,
-            updatedAt: .now
+            createdAt: .create(day: 12, month: 7, year: 2025, hour: 13),
+            updatedAt: .create(day: 12, month: 7, year: 2025, hour: 13)
         ),
 
         Transaction( // Для демонстрации таба дохода
@@ -140,10 +140,10 @@ final class TransactionsServiceMock: TransactionsProtocol {
             accountId: 1,
             categoryId: 1,
             amount: 180_000,
-            transactionDate: .now,
+            transactionDate: .create(day: 12, month: 7, year: 2025, hour: 10),
             comment: "Ещё одна зарплата",
-            createdAt: .now,
-            updatedAt: .now
+            createdAt: .create(day: 12, month: 7, year: 2025, hour: 10),
+            updatedAt: .create(day: 12, month: 7, year: 2025, hour: 10)
         )
     ]
 

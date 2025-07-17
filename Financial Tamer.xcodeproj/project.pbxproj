@@ -21,6 +21,16 @@
 		068636242DF7413F001F2E7F /* Unit Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unit Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		069216A02E1FECAA00F76604 /* Exceptions for "Utils" folder in "Unit Tests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"UIView+pin.swift",
+			);
+			target = 068636232DF7413F001F2E7F /* Unit Tests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		068636122DF74110001F2E7F /* App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
@@ -54,6 +64,9 @@
 		};
 		06EEA1AE2E047FE000FE176B /* Utils */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				069216A02E1FECAA00F76604 /* Exceptions for "Utils" folder in "Unit Tests" target */,
+			);
 			path = Utils;
 			sourceTree = "<group>";
 		};
