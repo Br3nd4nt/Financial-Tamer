@@ -140,6 +140,8 @@ struct HistoryView: View {
         }
         .navigationDestination(isPresented: $showAnalytics) {
             AnalyticsViewControllerWrapper(direction)
+                .navigationTitle("Анализ")
+                .ignoresSafeArea(.all) // To make toolbar the same background color
         }
     }
 

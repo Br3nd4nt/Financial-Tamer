@@ -8,32 +8,28 @@
 import UIKit
 
 final class AnalyticsViewController: UIViewController {
-    private let titleLabel = UILabel()
     private let headerView = AnalyticsHeaderView()
     private let tableTitleLabel = UILabel()
     private let categoriesTableView = UITableView(frame: .zero)
     private let viewModel: AnalyticsViewModel
-    private var tableViewHeightConstraint: NSLayoutConstraint?
+    private var headerWidthConstraint: NSLayoutConstraint?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemGroupedBackground
         navigationController?.navigationBar.backgroundColor = .systemGroupedBackground
-        makeTitle()
-        makeHeader()
         makeTable()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         Task {
-            await viewModel.loadTransactions() // ????
+            await viewModel.loadTransactions()
             reloadData()
         }
     }
 
     init(_ direction: Direction) {
-//        viewModel = AnalyticsViewModel(direction: direction, startDate: Date(timeIntervalSince1970: 0))
         viewModel = AnalyticsViewModel(direction: direction)
         headerView.startDatePicker!.date = viewModel.dayStart
         super.init(nibName: nil, bundle: nil)
@@ -51,22 +47,48 @@ final class AnalyticsViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private func makeTitle() {
-        view.addSubview(titleLabel)
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.pinTop(to: view.safeAreaLayoutGuide.topAnchor, 10)
-        titleLabel.pinLeft(to: view.safeAreaLayoutGuide.leadingAnchor, 10)
-        titleLabel.text = "Анализ"
-        titleLabel.textColor = .label
-        titleLabel.font = UIFont.systemFont(ofSize: 32, weight: .bold)
-    }
+    private func makeTable() {
+        let initialWidth = view.bounds.width > 0 ? view.bounds.width : UIScreen.main.bounds.width
+        let headerContainer = UIView(frame: CGRect(x: 0, y: 0, width: initialWidth, height: 1))
+        headerContainer.backgroundColor = .clear
+        headerContainer.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        headerWidthConstraint = headerContainer.widthAnchor.constraint(equalToConstant: initialWidth)
+        headerWidthConstraint?.isActive = true
 
-    private func makeHeader() {
-        view.addSubview(headerView)
+        headerContainer.addSubview(headerView)
         headerView.translatesAutoresizingMaskIntoConstraints = false
-        headerView.pinTop(to: titleLabel.bottomAnchor, 10)
-        headerView.pinLeft(to: view)
-        headerView.pinRight(to: view)
+        headerView.pinTop(to: headerContainer)
+        headerView.pinLeft(to: headerContainer)
+        headerView.pinRight(to: headerContainer)
+
+        tableTitleLabel.text = "Категории"
+        tableTitleLabel.textColor = .secondaryLabel
+        headerContainer.addSubview(tableTitleLabel)
+        tableTitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        tableTitleLabel.pinTop(to: headerView.bottomAnchor, 10)
+        tableTitleLabel.pinLeft(to: headerContainer, 10)
+        tableTitleLabel.pinRight(to: headerContainer, 10)
+        tableTitleLabel.pinBottom(to: headerContainer, 0)
+
+        let headerHeight = headerView.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height + 10 + tableTitleLabel.intrinsicContentSize.height
+        let minHeaderHeight: CGFloat = 120
+        headerContainer.frame = CGRect(x: 0, y: 0, width: initialWidth, height: max(headerHeight, minHeaderHeight))
+
+        categoriesTableView.tableHeaderView = headerContainer
+        categoriesTableView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(categoriesTableView)
+        categoriesTableView.pinTop(to: view.safeAreaLayoutGuide.topAnchor)
+        categoriesTableView.pinLeft(to: view.safeAreaLayoutGuide.leadingAnchor)
+        categoriesTableView.pinRight(to: view.safeAreaLayoutGuide.trailingAnchor)
+        categoriesTableView.pinBottom(to: view.safeAreaLayoutGuide.bottomAnchor)
+        categoriesTableView.backgroundColor = .systemBackground
+        categoriesTableView.dataSource = self
+        categoriesTableView.delegate = self
+        categoriesTableView.separatorStyle = .singleLine
+        categoriesTableView.isScrollEnabled = true
+        categoriesTableView.allowsSelection = false
+        categoriesTableView.register(AnalyticsCategoryCell.self, forCellReuseIdentifier: AnalyticsCategoryCell.reuseId)
+
         guard let startDatePicker = headerView.startDatePicker else {
             return
         }
@@ -78,59 +100,34 @@ final class AnalyticsViewController: UIViewController {
         headerView.selector.addTarget(viewModel, action: #selector(viewModel.sortOptionChanged), for: .valueChanged)
     }
 
-    private func makeTable() {
-        view.addSubview(tableTitleLabel)
-        tableTitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        tableTitleLabel.pinTop(to: headerView.bottomAnchor, 10)
-        tableTitleLabel.pinLeft(to: view.safeAreaLayoutGuide.leadingAnchor, 10)
-
-        tableTitleLabel.text = "Категории"
-        tableTitleLabel.textColor = .secondaryLabel
-
-        view.addSubview(categoriesTableView)
-        categoriesTableView.translatesAutoresizingMaskIntoConstraints = false
-        categoriesTableView.pinTop(to: tableTitleLabel.bottomAnchor, 5)
-        categoriesTableView.pinLeft(to: view.safeAreaLayoutGuide.leadingAnchor, 10)
-        categoriesTableView.pinRight(to: view.safeAreaLayoutGuide.trailingAnchor, 10)
-        tableViewHeightConstraint = categoriesTableView.setHeight(100)
-        categoriesTableView.backgroundColor = .systemBackground
-        categoriesTableView.dataSource = self
-        categoriesTableView.delegate = self
-        categoriesTableView.separatorStyle = .singleLine
-        categoriesTableView.isScrollEnabled = false
-        categoriesTableView.allowsSelection = false
-        categoriesTableView.register(AnalyticsCategoryCell.self, forCellReuseIdentifier: AnalyticsCategoryCell.reuseId)
-    }
-
     private func reloadData() {
-        tableTitleLabel.isHidden = viewModel.categoryRows.isEmpty
-        categoriesTableView.isHidden = viewModel.categoryRows.isEmpty
+        print("categoryRows count:", viewModel.categoryRows.count)
         categoriesTableView.reloadData()
         headerView.changeTotal(viewModel.total)
-        updateTableViewHeight()
+        updateTableHeaderLayout()
     }
 
-    private func updateTableViewHeight() {
-        categoriesTableView.layoutIfNeeded()
-        let contentHeight = categoriesTableView.contentSize.height
-        let maxHeight = view.bounds.height
-            - headerView.frame.maxY
-            - tableTitleLabel.frame.height
-            - view.safeAreaInsets.bottom
-            - 20
-
-        if contentHeight < maxHeight {
-            tableViewHeightConstraint?.constant = contentHeight
-            categoriesTableView.isScrollEnabled = false
-        } else {
-            tableViewHeightConstraint?.constant = maxHeight
-            categoriesTableView.isScrollEnabled = true
+    private func updateTableHeaderLayout() {
+        guard let header = categoriesTableView.tableHeaderView else { return }
+        let targetWidth = categoriesTableView.bounds.width
+        headerWidthConstraint?.constant = targetWidth
+        header.setNeedsLayout()
+        header.layoutIfNeeded()
+        let headerHeight = header.systemLayoutSizeFitting(
+            CGSize(width: targetWidth, height: 0),
+            withHorizontalFittingPriority: .required,
+            verticalFittingPriority: .fittingSizeLevel
+        ).height
+        if header.frame.width != targetWidth || header.frame.height != headerHeight {
+            header.frame = CGRect(x: 0, y: 0, width: targetWidth, height: headerHeight)
+            header.layoutIfNeeded()
+            categoriesTableView.tableHeaderView = header
         }
     }
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        updateTableViewHeight()
+        updateTableHeaderLayout()
     }
 }
 
@@ -142,8 +139,8 @@ extension AnalyticsViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-//        viewModel.categoryRows.count * 1000
-        viewModel.categoryRows.count
+        viewModel.categoryRows.count * 1000
+//        viewModel.categoryRows.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

@@ -19,7 +19,6 @@ struct AnalyticsViewControllerWrapper: UIViewControllerRepresentable {
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
         appearance.backgroundColor = .systemGroupedBackground
-        appearance.backgroundColor = .cyan
 
         vc.navigationController?.navigationBar.standardAppearance = appearance
         vc.navigationController?.navigationBar.scrollEdgeAppearance = appearance
