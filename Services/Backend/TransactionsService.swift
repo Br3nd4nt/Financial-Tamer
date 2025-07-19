@@ -28,7 +28,7 @@ final class TransactionsService: TransactionsProtocol {
             } catch {
                 print("Backup sync failed, continuing with main request: \(error)")
             }
-            
+
             print("Making network request...")
             let endpoint = TransactionsEndpoint.getTransactionsInTimeFrame(
                 accountId: accountId,
@@ -38,16 +38,16 @@ final class TransactionsService: TransactionsProtocol {
             let dtos: [TransactionDTO] = try await networkClient.request(endpoint)
             print("Network request completed successfully, got \(dtos.count) transactions")
             let transactions = ModelMapper.map(dtos)
-            
+
             for transaction in transactions {
                 try await localStorage.create(transaction)
             }
-            
+
             NetworkMonitor.shared.setOfflineMode(false)
             return transactions
         } catch {
             print("TransactionsService.getTransactionsInTimeFrame failed: \(error)")
-            
+
             if let urlError = error as? URLError {
                 switch urlError.code {
                 case .cancelled:
@@ -77,17 +77,17 @@ final class TransactionsService: TransactionsProtocol {
                 print("Setting offline mode due to unknown error: \(error)")
                 NetworkMonitor.shared.setOfflineMode(true)
             }
-            
+
             return try await getLocalTransactions(accountId: accountId, startDate: startDate, endDate: endDate)
         }
     }
-    
+
     private func getLocalTransactions(accountId: Int, startDate: Date, endDate: Date) async throws -> [Transaction] {
         let localTransactions = try await localStorage.getAll()
         let backupItems = try await backupStorage.getBackupItems()
-        
+
         var allTransactions = localTransactions
-        
+
         for (backupTransaction, action) in backupItems {
             switch action {
             case .create:
@@ -102,7 +102,7 @@ final class TransactionsService: TransactionsProtocol {
                 allTransactions.removeAll { $0.id == backupTransaction.id }
             }
         }
-        
+
         return allTransactions.filter { transaction in
             transaction.accountId == accountId &&
             transaction.transactionDate >= startDate &&
@@ -114,10 +114,10 @@ final class TransactionsService: TransactionsProtocol {
         do {
             let endpoint = TransactionsEndpoint.createTransaction(transaction: transaction)
             let createdTransaction: Transaction = try await networkClient.request(endpoint, body: transaction)
-            
+
             try await localStorage.create(createdTransaction)
             try await backupStorage.removeFromBackup(transaction.id)
-            
+
             NetworkMonitor.shared.setOfflineMode(false)
             return createdTransaction
         } catch {
@@ -130,10 +130,10 @@ final class TransactionsService: TransactionsProtocol {
         do {
             let endpoint = TransactionsEndpoint.updateTransaction(transaction: transaction)
             let updatedTransaction: Transaction = try await networkClient.request(endpoint, body: transaction)
-            
+
             try await localStorage.update(updatedTransaction)
             try await backupStorage.removeFromBackup(transaction.id)
-            
+
             NetworkMonitor.shared.setOfflineMode(false)
             return updatedTransaction
         } catch {
@@ -146,10 +146,10 @@ final class TransactionsService: TransactionsProtocol {
         do {
             let endpoint = TransactionsEndpoint.deleteTransaction(id: id)
             let _: EmptyResponse = try await networkClient.request(endpoint)
-            
+
             try await localStorage.delete(id)
             try await backupStorage.removeFromBackup(id)
-            
+
             NetworkMonitor.shared.setOfflineMode(false)
         } catch {
             if let transaction = try await localStorage.getById(id) {
@@ -158,14 +158,14 @@ final class TransactionsService: TransactionsProtocol {
             throw error
         }
     }
-    
+
     private func syncBackupTransactions() async throws {
         let backupItems = try await backupStorage.getBackupItems()
-        
+
         if backupItems.isEmpty {
             return
         }
-        
+
         for (transaction, action) in backupItems {
             do {
                 switch action {
@@ -174,13 +174,13 @@ final class TransactionsService: TransactionsProtocol {
                     let createdTransaction: Transaction = try await networkClient.request(endpoint, body: transaction)
                     try await localStorage.create(createdTransaction)
                     try await backupStorage.removeFromBackup(transaction.id)
-                    
+
                 case .update:
                     let endpoint = TransactionsEndpoint.updateTransaction(transaction: transaction)
                     let updatedTransaction: Transaction = try await networkClient.request(endpoint, body: transaction)
                     try await localStorage.update(updatedTransaction)
                     try await backupStorage.removeFromBackup(transaction.id)
-                    
+
                 case .delete:
                     let endpoint = TransactionsEndpoint.deleteTransaction(id: transaction.id)
                     let _: EmptyResponse = try await networkClient.request(endpoint)

@@ -11,7 +11,7 @@ final class LocalTransaction {
     var comment: String
     var createdAt: Date
     var updatedAt: Date
-    
+
     init(id: Int, accountId: Int, categoryId: Int, amount: String, transactionDate: Date, comment: String, createdAt: Date, updatedAt: Date) {
         self.id = id
         self.accountId = accountId
@@ -22,7 +22,7 @@ final class LocalTransaction {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
-    
+
     convenience init(from transaction: Transaction) {
         self.init(
             id: transaction.id,
@@ -35,9 +35,9 @@ final class LocalTransaction {
             updatedAt: transaction.updatedAt
         )
     }
-    
+
     func toTransaction() -> Transaction {
-        return Transaction(
+        Transaction(
             id: id,
             accountId: accountId,
             categoryId: categoryId,
@@ -48,4 +48,4 @@ final class LocalTransaction {
             updatedAt: updatedAt
         )
     }
-} 
+}

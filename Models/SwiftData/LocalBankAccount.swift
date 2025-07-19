@@ -10,7 +10,7 @@ final class LocalBankAccount {
     var currency: String
     var createdAt: Date
     var updatedAt: Date
-    
+
     init(id: Int, userId: Int, name: String, balance: String, currency: String, createdAt: Date, updatedAt: Date) {
         self.id = id
         self.userId = userId
@@ -20,7 +20,7 @@ final class LocalBankAccount {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
-    
+
     convenience init(from bankAccount: BankAccount) {
         self.init(
             id: bankAccount.id,
@@ -32,9 +32,9 @@ final class LocalBankAccount {
             updatedAt: bankAccount.updatedAt
         )
     }
-    
+
     func toBankAccount() -> BankAccount {
-        return BankAccount(
+        BankAccount(
             id: id,
             userId: userId,
             name: name,
@@ -44,4 +44,4 @@ final class LocalBankAccount {
             updatedAt: updatedAt
         )
     }
-} 
+}

@@ -4,13 +4,13 @@ import CoreData
 final class TransactionsCoreDataBackupStorage: BackupStorageProtocol {
     typealias Item = Transaction
     typealias Action = BackupAction
-    
+
     private let context: NSManagedObjectContext
-    
+
     init() {
         self.context = CoreDataManager.shared.context
     }
-    
+
     func addToBackup(_ item: Transaction, action: BackupAction) async throws {
         let cdBackupTransaction = CDBackupTransaction(context: context)
         cdBackupTransaction.id = Int32(item.id)
@@ -22,13 +22,13 @@ final class TransactionsCoreDataBackupStorage: BackupStorageProtocol {
         cdBackupTransaction.createdAt = item.createdAt
         cdBackupTransaction.updatedAt = item.updatedAt
         cdBackupTransaction.action = action.rawValue
-        
+
         CoreDataManager.shared.saveContext()
     }
-    
+
     func getBackupItems() async throws -> [(item: Transaction, action: BackupAction)] {
         let request: NSFetchRequest<CDBackupTransaction> = CDBackupTransaction.fetchRequest()
-        
+
         do {
             let cdBackupTransactions = try context.fetch(request)
             return cdBackupTransactions.compactMap { cdBackupTransaction in
@@ -40,7 +40,7 @@ final class TransactionsCoreDataBackupStorage: BackupStorageProtocol {
                       let action = BackupAction(rawValue: actionString) else {
                     return nil
                 }
-                
+
                 let transaction = Transaction(
                     id: Int(cdBackupTransaction.id),
                     accountId: Int(cdBackupTransaction.accountId),
@@ -51,18 +51,18 @@ final class TransactionsCoreDataBackupStorage: BackupStorageProtocol {
                     createdAt: createdAt,
                     updatedAt: updatedAt
                 )
-                
+
                 return (item: transaction, action: action)
             }
         } catch {
             throw error
         }
     }
-    
+
     func removeFromBackup(_ id: Int) async throws {
         let request: NSFetchRequest<CDBackupTransaction> = CDBackupTransaction.fetchRequest()
         request.predicate = NSPredicate(format: "id == %d", id)
-        
+
         do {
             let cdBackupTransactions = try context.fetch(request)
             for cdBackupTransaction in cdBackupTransactions {
@@ -73,10 +73,10 @@ final class TransactionsCoreDataBackupStorage: BackupStorageProtocol {
             throw error
         }
     }
-    
+
     func clearBackup() async throws {
         let request: NSFetchRequest<CDBackupTransaction> = CDBackupTransaction.fetchRequest()
-        
+
         do {
             let cdBackupTransactions = try context.fetch(request)
             for cdBackupTransaction in cdBackupTransactions {
@@ -87,4 +87,4 @@ final class TransactionsCoreDataBackupStorage: BackupStorageProtocol {
             throw error
         }
     }
-} 
+}

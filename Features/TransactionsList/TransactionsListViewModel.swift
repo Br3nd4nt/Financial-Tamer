@@ -11,7 +11,7 @@ import Foundation
 final class TransactionsListViewModel: ObservableObject {
     @Published var transactionRows: [TransactionFull] = []
     @Published var isLoading = false
-    
+
 
 
     @Published var sortOption: TransactionSortOption = .byDate {
@@ -127,7 +127,7 @@ final class TransactionsListViewModel: ObservableObject {
             return
         }
 
-        let categoryDict = Dictionary(grouping: rawCategories, by: { $0.id })
+        let categoryDict = Dictionary(grouping: rawCategories) { $0.id }
             .compactMapValues { categories in
                 categories.first
             }

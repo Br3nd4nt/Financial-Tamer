@@ -3,23 +3,23 @@ import SwiftData
 
 final class TransactionsLocalStorage: LocalStorageProtocol {
     typealias Item = Transaction
-    
+
     private let modelContext: ModelContext
-    
+
     init() throws {
         self.modelContext = SharedModelContainer.shared.modelContext
     }
-    
+
     func getAll() async throws -> [Transaction] {
-        return try await MainActor.run {
+        try await MainActor.run {
             let descriptor = FetchDescriptor<LocalTransaction>()
             let localTransactions = try modelContext.fetch(descriptor)
             return localTransactions.map { $0.toTransaction() }
         }
     }
-    
+
     func getById(_ id: Int) async throws -> Transaction? {
-        return try await MainActor.run {
+        try await MainActor.run {
             let descriptor = FetchDescriptor<LocalTransaction>(
                 predicate: #Predicate<LocalTransaction> { localTransaction in
                     localTransaction.id == id
@@ -29,7 +29,7 @@ final class TransactionsLocalStorage: LocalStorageProtocol {
             return localTransaction?.toTransaction()
         }
     }
-    
+
     func create(_ item: Transaction) async throws {
         try await MainActor.run {
             let itemId = item.id
@@ -40,13 +40,13 @@ final class TransactionsLocalStorage: LocalStorageProtocol {
             if !existingTransactions.isEmpty {
                 return
             }
-            
+
             let localTransaction = LocalTransaction(from: item)
             modelContext.insert(localTransaction)
             try modelContext.save()
         }
     }
-    
+
     func update(_ item: Transaction) async throws {
         try await MainActor.run {
             let descriptor = FetchDescriptor<LocalTransaction>(
@@ -55,8 +55,8 @@ final class TransactionsLocalStorage: LocalStorageProtocol {
                 }
             )
             let localTransaction = try modelContext.fetch(descriptor).first
-            
-            if let localTransaction = localTransaction {
+
+            if let localTransaction {
                 localTransaction.accountId = item.accountId
                 localTransaction.categoryId = item.categoryId
                 localTransaction.amount = item.amount.description
@@ -69,7 +69,7 @@ final class TransactionsLocalStorage: LocalStorageProtocol {
             }
         }
     }
-    
+
     func delete(_ id: Int) async throws {
         try await MainActor.run {
             let descriptor = FetchDescriptor<LocalTransaction>(
@@ -78,19 +78,19 @@ final class TransactionsLocalStorage: LocalStorageProtocol {
                 }
             )
             let localTransactions = try modelContext.fetch(descriptor)
-            
+
             for localTransaction in localTransactions {
                 modelContext.delete(localTransaction)
             }
             try modelContext.save()
         }
     }
-    
+
     func clear() async throws {
         try await MainActor.run {
             let descriptor = FetchDescriptor<LocalTransaction>()
             let localTransactions = try modelContext.fetch(descriptor)
-            
+
             for localTransaction in localTransactions {
                 modelContext.delete(localTransaction)
             }
@@ -102,4 +102,4 @@ final class TransactionsLocalStorage: LocalStorageProtocol {
 enum LocalStorageError: Error {
     case itemNotFound
     case saveFailed
-} 
+}

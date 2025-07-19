@@ -3,17 +3,17 @@ import Network
 
 final class NetworkMonitor: ObservableObject {
     static let shared = NetworkMonitor()
-    
+
     @Published var isOnline = true
     @Published var isOfflineMode = false
-    
+
     private let monitor = NWPathMonitor()
     private let queue = DispatchQueue(label: "NetworkMonitor")
-    
+
     private init() {
         startMonitoring()
     }
-    
+
     private func startMonitoring() {
         monitor.pathUpdateHandler = { [weak self] path in
             DispatchQueue.main.async {
@@ -23,7 +23,7 @@ final class NetworkMonitor: ObservableObject {
         }
         monitor.start(queue: queue)
     }
-    
+
     private func updateOfflineMode() {
         print("NetworkMonitor: isOnline = \(isOnline)")
         if !isOnline {
@@ -34,7 +34,7 @@ final class NetworkMonitor: ObservableObject {
             isOfflineMode = false
         }
     }
-    
+
     func setOfflineMode(_ offline: Bool) {
         DispatchQueue.main.async {
             print("NetworkMonitor: setOfflineMode called with \(offline)")
@@ -49,8 +49,8 @@ final class NetworkMonitor: ObservableObject {
             }
         }
     }
-    
+
     deinit {
         monitor.cancel()
     }
-} 
+}

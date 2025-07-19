@@ -3,23 +3,23 @@ import CoreData
 
 final class CoreDataManager {
     static let shared = CoreDataManager()
-    
+
     private init() {}
-    
+
     lazy var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "FinancialTamer")
         container.loadPersistentStores { _, error in
-            if let error = error {
+            if let error {
                 fatalError("Core Data store failed to load: \(error)")
             }
         }
         return container
     }()
-    
+
     var context: NSManagedObjectContext {
-        return persistentContainer.viewContext
+        persistentContainer.viewContext
     }
-    
+
     func saveContext() {
         if context.hasChanges {
             do {
@@ -29,4 +29,4 @@ final class CoreDataManager {
             }
         }
     }
-} 
+}

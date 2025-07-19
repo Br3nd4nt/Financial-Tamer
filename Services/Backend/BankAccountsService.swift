@@ -21,14 +21,14 @@ final class BankAccountsService: BankAccountsProtocol {
     func getBankAccount(userId: Int) async throws -> BankAccount {
         do {
             try await syncBackupBankAccounts()
-            
+
             let endpoint = BankAccountsEndpoint.getBankAccount(userId: userId)
             let dto: BankAccountDTO = try await networkClient.request(endpoint)
             let bankAccount = ModelMapper.map(dto)
-            
+
             try await localStorage.create(bankAccount)
             NetworkMonitor.shared.setOfflineMode(false)
-            
+
             return bankAccount
         } catch {
             print("BankAccountsService.getBankAccount failed: \(error)")
@@ -54,9 +54,9 @@ final class BankAccountsService: BankAccountsProtocol {
             }
             let localBankAccounts = try await localStorage.getAll()
             let backupItems = try await backupStorage.getBackupItems()
-            
+
             var allBankAccounts = localBankAccounts
-            
+
             for (backupBankAccount, action) in backupItems {
                 switch action {
                 case .create:
@@ -71,7 +71,7 @@ final class BankAccountsService: BankAccountsProtocol {
                     allBankAccounts.removeAll { $0.id == backupBankAccount.id }
                 }
             }
-            
+
             return allBankAccounts.first { $0.userId == userId } ?? BankAccount(
                 id: 0,
                 userId: userId,
@@ -89,11 +89,11 @@ final class BankAccountsService: BankAccountsProtocol {
             let endpoint = BankAccountsEndpoint.updateBankAccount(userId: userId, newAccount: newAccount)
             let dto: BankAccountDTO = try await networkClient.request(endpoint, body: ModelMapper.map(newAccount))
             let updatedBankAccount = ModelMapper.map(dto)
-            
+
             try await localStorage.update(updatedBankAccount)
             try await backupStorage.removeFromBackup(newAccount.id)
             NetworkMonitor.shared.setOfflineMode(false)
-            
+
             return updatedBankAccount
         } catch {
             print("BankAccountsService.updateBankAccount failed: \(error)")
@@ -121,10 +121,10 @@ final class BankAccountsService: BankAccountsProtocol {
             throw error
         }
     }
-    
+
     private func syncBackupBankAccounts() async throws {
         let backupItems = try await backupStorage.getBackupItems()
-        
+
         for (bankAccount, action) in backupItems {
             do {
                 switch action {
@@ -134,14 +134,14 @@ final class BankAccountsService: BankAccountsProtocol {
                     let createdBankAccount = ModelMapper.map(dto)
                     try await localStorage.create(createdBankAccount)
                     try await backupStorage.removeFromBackup(bankAccount.id)
-                    
+
                 case .update:
                     let endpoint = BankAccountsEndpoint.updateBankAccount(userId: bankAccount.userId, newAccount: bankAccount)
                     let dto: BankAccountDTO = try await networkClient.request(endpoint, body: ModelMapper.map(bankAccount))
                     let updatedBankAccount = ModelMapper.map(dto)
                     try await localStorage.update(updatedBankAccount)
                     try await backupStorage.removeFromBackup(bankAccount.id)
-                    
+
                 case .delete:
                     // For bank accounts, we don't have a delete endpoint, so we'll just remove from backup
                     try await backupStorage.removeFromBackup(bankAccount.id)

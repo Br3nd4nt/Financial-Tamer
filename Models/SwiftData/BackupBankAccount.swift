@@ -11,7 +11,7 @@ final class BackupBankAccount {
     var createdAt: Date
     var updatedAt: Date
     var action: String
-    
+
     init(id: Int, userId: Int, name: String, balance: String, currency: String, createdAt: Date, updatedAt: Date, action: BackupAction) {
         self.id = id
         self.userId = userId
@@ -22,7 +22,7 @@ final class BackupBankAccount {
         self.updatedAt = updatedAt
         self.action = action.rawValue
     }
-    
+
     convenience init(from bankAccount: BankAccount, action: BackupAction) {
         self.init(
             id: bankAccount.id,
@@ -35,9 +35,9 @@ final class BackupBankAccount {
             action: action
         )
     }
-    
+
     func toBankAccount() -> BankAccount {
-        return BankAccount(
+        BankAccount(
             id: id,
             userId: userId,
             name: name,
@@ -47,8 +47,8 @@ final class BackupBankAccount {
             updatedAt: updatedAt
         )
     }
-    
+
     var backupAction: BackupAction {
-        return BackupAction(rawValue: action) ?? .create
+        BackupAction(rawValue: action) ?? .create
     }
-} 
+}

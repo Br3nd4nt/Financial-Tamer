@@ -12,7 +12,7 @@ final class BackupTransaction {
     var createdAt: Date
     var updatedAt: Date
     var action: String
-    
+
     init(id: Int, accountId: Int, categoryId: Int, amount: String, transactionDate: Date, comment: String, createdAt: Date, updatedAt: Date, action: BackupAction) {
         self.id = id
         self.accountId = accountId
@@ -24,7 +24,7 @@ final class BackupTransaction {
         self.updatedAt = updatedAt
         self.action = action.rawValue
     }
-    
+
     convenience init(from transaction: Transaction, action: BackupAction) {
         self.init(
             id: transaction.id,
@@ -38,9 +38,9 @@ final class BackupTransaction {
             action: action
         )
     }
-    
+
     func toTransaction() -> Transaction {
-        return Transaction(
+        Transaction(
             id: id,
             accountId: accountId,
             categoryId: categoryId,
@@ -51,9 +51,9 @@ final class BackupTransaction {
             updatedAt: updatedAt
         )
     }
-    
+
     var backupAction: BackupAction {
-        return BackupAction(rawValue: action) ?? .create
+        BackupAction(rawValue: action) ?? .create
     }
 }
 
@@ -68,7 +68,7 @@ extension BackupAction {
             return "delete"
         }
     }
-    
+
     init?(rawValue: String) {
         switch rawValue {
         case "create":
@@ -81,4 +81,4 @@ extension BackupAction {
             return nil
         }
     }
-} 
+}

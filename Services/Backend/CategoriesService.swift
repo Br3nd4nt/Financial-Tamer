@@ -21,14 +21,14 @@ final class CategoriesService: CategoriesProtocol {
             let endpoint = CategoriesEndpoint.getAllCategories
             let dtos: [CategoryDTO] = try await networkClient.request(endpoint)
             let categories = ModelMapper.map(dtos)
-            
+
             // Clear existing categories and save new ones
             try await localStorage.clear()
             for category in categories {
                 try await localStorage.create(category)
             }
             NetworkMonitor.shared.setOfflineMode(false)
-            
+
             return categories
         } catch {
             print("CategoriesService.getCategories failed: \(error)")
@@ -61,14 +61,14 @@ final class CategoriesService: CategoriesProtocol {
             let endpoint = CategoriesEndpoint.getCategoriesByDirection(direction: direction)
             let dtos: [CategoryDTO] = try await networkClient.request(endpoint)
             let categories = ModelMapper.map(dtos)
-            
+
             // Clear existing categories and save new ones
             try await localStorage.clear()
             for category in categories {
                 try await localStorage.create(category)
             }
             NetworkMonitor.shared.setOfflineMode(false)
-            
+
             return categories
         } catch {
             print("CategoriesService.getCategoriesDyDirection failed: \(error)")

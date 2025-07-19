@@ -17,7 +17,7 @@ struct FinancialTamerApp: App {
         WindowGroup {
             ZStack(alignment: .top) {
                 AppTabBarView()
-                
+
                 OfflineIndicatorView(isVisible: networkMonitor.isOfflineMode)
             }
             .task {

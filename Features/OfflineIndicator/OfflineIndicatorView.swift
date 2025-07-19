@@ -2,7 +2,7 @@ import SwiftUI
 
 struct OfflineIndicatorView: View {
     let isVisible: Bool
-    
+
     var body: some View {
         if isVisible {
             VStack(spacing: 0) {
@@ -18,7 +18,7 @@ struct OfflineIndicatorView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
                 .background(Color.red)
-                
+
                 Spacer()
             }
             .transition(.move(edge: .top).combined(with: .opacity))
@@ -29,4 +29,4 @@ struct OfflineIndicatorView: View {
 
 #Preview {
     OfflineIndicatorView(isVisible: true)
-} 
+}

@@ -50,10 +50,10 @@ final class ServiceFactory {
             return BankAccountsServiceMock.shared
         }
     }()
-    
+
     private func createTransactionsService() throws -> TransactionsService {
         let storageMethod = StorageSettings.shared.currentStorageMethod
-        
+
         switch storageMethod {
         case .swiftData:
             return TransactionsService(
@@ -67,10 +67,10 @@ final class ServiceFactory {
             )
         }
     }
-    
+
     private func createBankAccountsService() throws -> BankAccountsService {
         let storageMethod = StorageSettings.shared.currentStorageMethod
-        
+
         switch storageMethod {
         case .swiftData:
             return BankAccountsService(
@@ -84,10 +84,10 @@ final class ServiceFactory {
             )
         }
     }
-    
+
     private func createCategoriesService() throws -> CategoriesService {
         let storageMethod = StorageSettings.shared.currentStorageMethod
-        
+
         switch storageMethod {
         case .swiftData:
             return CategoriesService(localStorage: try CategoriesLocalStorage())

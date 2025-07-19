@@ -7,14 +7,14 @@ final class LocalCategory {
     var name: String
     var emoji: String
     var direction: String
-    
+
     init(id: Int, name: String, emoji: String, direction: String) {
         self.id = id
         self.name = name
         self.emoji = emoji
         self.direction = direction
     }
-    
+
     convenience init(from category: Category) {
         self.init(
             id: category.id,
@@ -23,13 +23,13 @@ final class LocalCategory {
             direction: category.direction.rawValue
         )
     }
-    
+
     func toCategory() -> Category {
-        return Category(
+        Category(
             id: id,
             name: name,
             emoji: Character(emoji),
             direction: Direction(rawValue: direction) ?? .income
         )
     }
-} 
+}
