@@ -29,8 +29,12 @@ final class AnalyticsViewController: UIViewController {
         }
     }
 
-    init(_ direction: Direction) {
-        viewModel = AnalyticsViewModel(direction: direction)
+    init(_ direction: Direction, errorHandler: ErrorHandler) {
+        viewModel = AnalyticsViewModel(
+            direction: direction
+        )            { error, context, userMessage in
+                errorHandler.handleError(error, context: context, userMessage: userMessage)
+        }
         headerView.startDatePicker!.date = viewModel.dayStart
         super.init(nibName: nil, bundle: nil)
         viewModel.onReloadData = reloadData
@@ -71,7 +75,7 @@ final class AnalyticsViewController: UIViewController {
         tableTitleLabel.pinBottom(to: headerContainer, 0)
 
         let headerHeight = headerView.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height + 10 + tableTitleLabel.intrinsicContentSize.height
-        let minHeaderHeight: CGFloat = 120
+        let minHeaderHeight: Double = 120
         headerContainer.frame = CGRect(x: 0, y: 0, width: initialWidth, height: max(headerHeight, minHeaderHeight))
 
         categoriesTableView.tableHeaderView = headerContainer
@@ -108,7 +112,9 @@ final class AnalyticsViewController: UIViewController {
     }
 
     private func updateTableHeaderLayout() {
-        guard let header = categoriesTableView.tableHeaderView else { return }
+        guard let header = categoriesTableView.tableHeaderView else {
+            return
+        }
         let targetWidth = categoriesTableView.bounds.width
         headerWidthConstraint?.constant = targetWidth
         header.setNeedsLayout()
@@ -156,14 +162,12 @@ extension AnalyticsViewController: UITableViewDataSource {
 
 #Preview {
     let navController = UINavigationController()
-    let analyticsVC = AnalyticsViewController(.income)
+    let analyticsVC = AnalyticsViewController(.income, errorHandler: ErrorHandler())
 
     let previousVC = UIViewController()
     previousVC.title = "Главная"
     previousVC.view.backgroundColor = .systemGroupedBackground
 
-
     navController.setViewControllers([previousVC, analyticsVC], animated: false)
-
     return navController
 }

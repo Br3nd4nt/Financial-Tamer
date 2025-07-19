@@ -11,6 +11,7 @@ import UIKit
 @main
 struct FinancialTamerApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
     var body: some Scene {
         WindowGroup {
             AppTabBarView()

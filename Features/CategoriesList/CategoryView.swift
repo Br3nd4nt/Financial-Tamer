@@ -8,35 +8,116 @@
 import SwiftUI
 
 struct CategoryView: View {
-    @StateObject private var viewModel = CategoryViewModel()
+    @StateObject private var viewModel: CategoryViewModel
+    @StateObject private var errorHandler = ErrorHandler()
+
+    @State private var searchText = ""
+    @State private var showCreateCategory = false
+
+    init() {
+        _viewModel = StateObject(wrappedValue: CategoryViewModel(errorHandler: ErrorHandler()))
+    }
 
     var body: some View {
         NavigationStack {
-            List {
-                if !viewModel.incomeCategories.isEmpty {
-                    Section(Constants.incomeCategories) {
-                        ForEach(viewModel.incomeCategories) { category in
+            Group {
+                if viewModel.isLoading {
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                            .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+
+                        Text("Загрузка категорий...")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color(.systemGroupedBackground))
+                } else if viewModel.filteredCategories.isEmpty {
+                    VStack(spacing: 16) {
+                        Image(systemName: "folder")
+                            .font(.system(size: 48))
+                            .foregroundColor(.secondary)
+
+                        Text("Нет категорий")
+                            .font(.title2)
+                            .fontWeight(.medium)
+                            .foregroundColor(.primary)
+
+                        Text("Здесь будут отображаться ваши категории для доходов и расходов")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color(.systemGroupedBackground))
+                } else {
+                    List {
+                        ForEach(viewModel.filteredCategories) { category in
                             CategoryRow(category: category)
                         }
                     }
+                    .listStyle(.insetGrouped)
                 }
-                if !viewModel.outcomeCategories.isEmpty {
-                    Section(Constants.outcomeCategories) {
-                        ForEach(viewModel.outcomeCategories) { category in
-                            CategoryRow(category: category)
-                        }
+            }
+            .navigationTitle("Категории")
+            .searchable(text: $searchText, prompt: "Поиск категорий")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: { showCreateCategory = true }) {
+                        Image(systemName: "plus")
                     }
                 }
             }
-            .navigationTitle(Constants.title)
+            .task {
+                await viewModel.loadCategories()
+            }
+            .refreshable {
+                await viewModel.loadCategories()
+            }
+            .sheet(isPresented: $showCreateCategory) {
+                CreateCategoryView()
+            }
+            .errorAlert(errorHandler: errorHandler)
         }
-        .searchable(text: $viewModel.searchText)
+        .onAppear {
+            viewModel.errorHandler = errorHandler
+        }
     }
+}
 
-    private enum Constants {
-        static let title = "Мои статьи"
-        static let incomeCategories = "Доход"
-        static let outcomeCategories = "Затраты"
+struct CreateCategoryView: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var name = ""
+    @State private var emoji = "📁"
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Название", text: $name)
+                    TextField("Эмодзи", text: $emoji)
+                }
+            }
+            .navigationTitle("Новая категория")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Отмена") {
+                        dismiss()
+                    }
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Сохранить") {
+                        // TODO: Implement category creation
+                        dismiss()
+                    }
+                    .disabled(name.isEmpty)
+                }
+            }
+        }
     }
 }
 

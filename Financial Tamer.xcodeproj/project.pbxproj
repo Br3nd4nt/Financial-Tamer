@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		06FAFA912E2B092300CDC969 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06FAFA902E2B092300CDC969 /* Config.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		068636282DF7413F001F2E7F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -19,6 +23,7 @@
 /* Begin PBXFileReference section */
 		068636102DF74110001F2E7F /* Financial Tamer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Financial Tamer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		068636242DF7413F001F2E7F /* Unit Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unit Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		06FAFA902E2B092300CDC969 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -70,6 +75,11 @@
 			path = Utils;
 			sourceTree = "<group>";
 		};
+		06FAFAA32E2B0CC700CDC969 /* Network */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Network;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,6 +103,8 @@
 		068636072DF74110001F2E7F = {
 			isa = PBXGroup;
 			children = (
+				06FAFAA32E2B0CC700CDC969 /* Network */,
+				06FAFA902E2B092300CDC969 /* Config.swift */,
 				06B2C44D2E054EB90080370B /* Features */,
 				0686362D2DF74167001F2E7F /* Models */,
 				068636122DF74110001F2E7F /* App */,
@@ -136,6 +148,7 @@
 				0686362F2DF74180001F2E7F /* Services */,
 				06B2C44D2E054EB90080370B /* Features */,
 				06EEA1AE2E047FE000FE176B /* Utils */,
+				06FAFAA32E2B0CC700CDC969 /* Network */,
 			);
 			name = "Financial Tamer";
 			packageProductDependencies = (
@@ -252,6 +265,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				06FAFA912E2B092300CDC969 /* Config.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
