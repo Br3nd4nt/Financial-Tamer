@@ -19,20 +19,80 @@ final class ServiceFactory {
         if useMockServices {
             return TransactionsServiceMock.shared
         }
-        return TransactionsService()
+        do {
+            return try createTransactionsService()
+        } catch {
+            print("Failed to initialize TransactionsService: \(error)")
+            return TransactionsServiceMock.shared
+        }
     }()
 
     lazy var categoriesService: CategoriesProtocol = {
         if useMockServices {
             return CategoriesServiceMock.shared
         }
-        return CategoriesService()
+        do {
+            return try createCategoriesService()
+        } catch {
+            print("Failed to initialize CategoriesService: \(error)")
+            return CategoriesServiceMock.shared
+        }
     }()
 
     lazy var bankAccountsService: BankAccountsProtocol = {
         if useMockServices {
             return BankAccountsServiceMock.shared
         }
-        return BankAccountsService()
+        do {
+            return try createBankAccountsService()
+        } catch {
+            print("Failed to initialize BankAccountsService: \(error)")
+            return BankAccountsServiceMock.shared
+        }
     }()
+    
+    private func createTransactionsService() throws -> TransactionsService {
+        let storageMethod = StorageSettings.shared.currentStorageMethod
+        
+        switch storageMethod {
+        case .swiftData:
+            return TransactionsService(
+                localStorage: try TransactionsLocalStorage(),
+                backupStorage: try TransactionsBackupStorage()
+            )
+        case .coreData:
+            return TransactionsService(
+                localStorage: TransactionsCoreDataStorage(),
+                backupStorage: TransactionsCoreDataBackupStorage()
+            )
+        }
+    }
+    
+    private func createBankAccountsService() throws -> BankAccountsService {
+        let storageMethod = StorageSettings.shared.currentStorageMethod
+        
+        switch storageMethod {
+        case .swiftData:
+            return BankAccountsService(
+                localStorage: try BankAccountsLocalStorage(),
+                backupStorage: try BankAccountsBackupStorage()
+            )
+        case .coreData:
+            return BankAccountsService(
+                localStorage: BankAccountsCoreDataStorage(),
+                backupStorage: BankAccountsCoreDataBackupStorage()
+            )
+        }
+    }
+    
+    private func createCategoriesService() throws -> CategoriesService {
+        let storageMethod = StorageSettings.shared.currentStorageMethod
+        
+        switch storageMethod {
+        case .swiftData:
+            return CategoriesService(localStorage: try CategoriesLocalStorage())
+        case .coreData:
+            return CategoriesService(localStorage: CategoriesCoreDataStorage())
+        }
+    }
 }

@@ -11,6 +11,8 @@ import Foundation
 final class TransactionsListViewModel: ObservableObject {
     @Published var transactionRows: [TransactionFull] = []
     @Published var isLoading = false
+    
+
 
     @Published var sortOption: TransactionSortOption = .byDate {
         didSet {
@@ -63,21 +65,38 @@ final class TransactionsListViewModel: ObservableObject {
     }
 
     func loadTransactions() async {
+        print("Starting loadTransactions...")
         isLoading = true
 
         do {
+            print("Loading categories...")
             let loadedCategories = try await categoriesProtocol.getCategories()
             self.rawCategories = loadedCategories
+            print("Categories loaded successfully: \(loadedCategories.count) categories")
         } catch {
+            print("Failed to load categories: \(error)")
+            if let urlError = error as? URLError, urlError.code == .cancelled {
+                print("Categories request was cancelled during refresh")
+                isLoading = false
+                return
+            }
             errorHandler.handleError(error, context: "TransactionsListViewModel.loadTransactions", userMessage: "Не удалось загрузить категории")
             isLoading = false
             return
         }
 
         do {
+            print("Loading bank account...")
             let loadedAccount = try await bankAccountsProtocol.getBankAccount(userId: 1)
             self.account = loadedAccount
+            print("Bank account loaded successfully: \(loadedAccount.id)")
         } catch {
+            print("Failed to load bank account: \(error)")
+            if let urlError = error as? URLError, urlError.code == .cancelled {
+                print("Bank account request was cancelled during refresh")
+                isLoading = false
+                return
+            }
             errorHandler.handleError(error, context: "TransactionsListViewModel.loadTransactions", userMessage: "Не удалось загрузить банковский счет")
             isLoading = false
             return
@@ -97,12 +116,21 @@ final class TransactionsListViewModel: ObservableObject {
             )
             self.rawTransactions = loadedTransactions
         } catch {
+            print("Failed to load transactions: \(error)")
+            if let urlError = error as? URLError, urlError.code == .cancelled {
+                print("Transactions request was cancelled during refresh")
+                isLoading = false
+                return
+            }
             errorHandler.handleError(error, context: "TransactionsListViewModel.loadTransactions", userMessage: "Не удалось загрузить транзакции")
             isLoading = false
             return
         }
 
-        let categoryDict = Dictionary(uniqueKeysWithValues: rawCategories.map { ($0.id, $0) })
+        let categoryDict = Dictionary(grouping: rawCategories, by: { $0.id })
+            .compactMapValues { categories in
+                categories.first
+            }
 
         let rows = rawTransactions.compactMap { transaction -> TransactionFull? in
             guard let category = categoryDict[transaction.categoryId] else {

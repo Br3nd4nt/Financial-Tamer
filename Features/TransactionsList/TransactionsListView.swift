@@ -160,6 +160,8 @@ struct TransactionsListView: View {
                 await viewModel.loadTransactions()
             }
             .refreshable {
+                // Does not refresh for some reason
+                // It detects two gestures and they cancel each other?..
                 await viewModel.loadTransactions()
             }
             .errorAlert(errorHandler: errorHandler)

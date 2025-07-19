@@ -11,10 +11,18 @@ import UIKit
 @main
 struct FinancialTamerApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @StateObject private var networkMonitor = NetworkMonitor.shared
 
     var body: some Scene {
         WindowGroup {
-            AppTabBarView()
+            ZStack(alignment: .top) {
+                AppTabBarView()
+                
+                OfflineIndicatorView(isVisible: networkMonitor.isOfflineMode)
+            }
+            .task {
+                await DataMigrationManager.shared.migrateDataIfNeeded()
+            }
         }
     }
 }
