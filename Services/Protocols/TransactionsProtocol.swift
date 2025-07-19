@@ -8,7 +8,7 @@
 import Foundation
 
 protocol TransactionsProtocol {
-    func getTransactionsInTimeFrame(userId: Int, startDate: Date, endDate: Date) async throws -> [Transaction]
+    func getTransactionsInTimeFrame(accountId: Int, startDate: Date, endDate: Date) async throws -> [Transaction]
     func createTransaction(transaction: Transaction) async throws -> Transaction
     func updateTransaction(transaction: Transaction) async throws -> Transaction
     func deleteTransaction(id: Int) async throws

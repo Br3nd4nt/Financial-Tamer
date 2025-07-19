@@ -5,7 +5,6 @@
 //  Created by br3nd4nt on 27.06.2025.
 //
 
-import SwiftUI
 import Foundation
 
 @MainActor
@@ -17,22 +16,31 @@ final class BalanceViewModel: ObservableObject {
 
     @Published var account: BankAccount?
     @Published var state: State = .viewing
+    @Published var isLoading = false
 
+    private var userId: Int?
     private let bankAccountsService: BankAccountsProtocol
-    private let userId = 1
+    var errorHandler: ErrorHandler
 
-    init(bankAccountsService: BankAccountsProtocol = BankAccountsServiceMock.shared) {
+    init(bankAccountsService: BankAccountsProtocol = ServiceFactory.shared.bankAccountsService, errorHandler: ErrorHandler) {
         self.bankAccountsService = bankAccountsService
+        self.errorHandler = errorHandler
     }
 
     func loadAccount() async {
+        isLoading = true
+
         do {
-            let account = try await bankAccountsService.getBankAccount(userId: userId)
-            self.account = account
+            let loadedAccount = try await bankAccountsService.getBankAccount(userId: 1)
+            self.account = loadedAccount
+            self.userId = loadedAccount.userId
         } catch {
-            print("Failed to load bank account: \(error)")
-            self.account = nil
+            errorHandler.handleError(error, context: "BalanceViewModel.loadAccount", userMessage: "Не удалось загрузить банковский счет")
+            isLoading = false
+            return
         }
+
+        isLoading = false
     }
 
     func setState(_ newState: State) {
@@ -44,21 +52,13 @@ final class BalanceViewModel: ObservableObject {
     }
 
     func refreshAccount() async {
-        try? await Task.sleep(nanoseconds: 1_000_000_000) // just simulation of waiting for server response
+        try? await Task.sleep(nanoseconds: 1_000_000_000)
         await loadAccount()
-    }
-
-    func updateAccount(_ updated: BankAccount) async {
-        do {
-            let newAccount = try await bankAccountsService.updateBankAccount(userId: userId, newAccount: updated)
-            self.account = newAccount
-        } catch {
-            print("Failed to update bank account: \(error)")
-        }
     }
 
     func updateBalance(_ newBalance: Decimal) async {
         guard var current = account else {
+            errorHandler.handleError(NSError(domain: "BalanceViewModel", code: 0, userInfo: [NSLocalizedDescriptionKey: "No account to update"]), context: "BalanceViewModel.updateBalance", userMessage: "Нет счета для обновления")
             return
         }
         current = BankAccount(
@@ -75,6 +75,7 @@ final class BalanceViewModel: ObservableObject {
 
     func updateCurrency(_ newCurrency: Currency) async {
         guard var current = account else {
+            errorHandler.handleError(NSError(domain: "BalanceViewModel", code: 0, userInfo: [NSLocalizedDescriptionKey: "No account to update"]), context: "BalanceViewModel.updateCurrency", userMessage: "Нет счета для обновления")
             return
         }
         current = BankAccount(
@@ -87,5 +88,19 @@ final class BalanceViewModel: ObservableObject {
             updatedAt: Date()
         )
         await updateAccount(current)
+    }
+
+    func updateAccount(_ updated: BankAccount) async {
+        guard let userId else {
+            errorHandler.handleError(NSError(domain: "BalanceViewModel", code: 0, userInfo: [NSLocalizedDescriptionKey: "No user ID available"]), context: "BalanceViewModel.updateAccount", userMessage: "Не удалось обновить банковский счет")
+            return
+        }
+
+        do {
+            let newAccount = try await bankAccountsService.updateBankAccount(userId: userId, newAccount: updated)
+            self.account = newAccount
+        } catch {
+            errorHandler.handleError(error, context: "BalanceViewModel.updateAccount", userMessage: "Не удалось обновить банковский счет")
+        }
     }
 }

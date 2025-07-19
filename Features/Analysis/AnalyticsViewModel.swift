@@ -41,6 +41,7 @@ final class AnalyticsViewModel: ObservableObject {
     private let transactionsProtocol: TransactionsProtocol
     private let categoriesProtocol: CategoriesProtocol
     private let bankAccountsProtocol: BankAccountsProtocol
+    private let onError: (Error, String, String?) -> Void
 
     var onReloadData: (() -> Void)?
     var setStartDateForPicker: ((Date) -> Void)?
@@ -50,18 +51,18 @@ final class AnalyticsViewModel: ObservableObject {
         direction: Direction,
         startDate: Date = Date(),
         endDate: Date = Date(),
-        transactionsProtocol: TransactionsProtocol = TransactionsServiceMock.shared,
-        categoriesProtocol: CategoriesProtocol = CategoriesServiceMock.shared,
-        bankAccountsProtocol: BankAccountsProtocol = BankAccountsServiceMock.shared,
-        onReloadData: (() -> Void)? = nil
+        transactionsProtocol: TransactionsProtocol = ServiceFactory.shared.transactionsService,
+        categoriesProtocol: CategoriesProtocol = ServiceFactory.shared.categoriesService,
+        bankAccountsProtocol: BankAccountsProtocol = ServiceFactory.shared.bankAccountsService,
+        onError: @escaping (Error, String, String?) -> Void
     ) {
         self.direction = direction
         self.transactionsProtocol = transactionsProtocol
         self.categoriesProtocol = categoriesProtocol
         self.bankAccountsProtocol = bankAccountsProtocol
+        self.onError = onError
         self.dayStart = startDate.startOfDay
         self.dayEnd = endDate.endOfDay
-        self.onReloadData = onReloadData
     }
 
     var total: Decimal {
@@ -75,29 +76,38 @@ final class AnalyticsViewModel: ObservableObject {
     }
 
     func loadTransactions() async {
-        guard let loadedCategories = try? await categoriesProtocol.getCategories() else {
-            print("Failed to load categories")
+        do {
+            let loadedCategories = try await categoriesProtocol.getCategories()
+            self.rawCategories = loadedCategories
+        } catch {
+            onError(error, "AnalyticsViewModel.loadTransactions", "Не удалось загрузить категории")
             return
         }
 
-        self.rawCategories = loadedCategories
-
-        guard let loadedAccount = try? await bankAccountsProtocol.getBankAccount(userId: 1) else {
-            print("Failed to load bank account")
-            return
-        }
-        self.account = loadedAccount
-
-        guard let loadedTransactions = try? await transactionsProtocol.getTransactionsInTimeFrame(
-            userId: 1,
-            startDate: dayStart,
-            endDate: dayEnd
-        ) else {
-            print("Failed to load transactions")
+        do {
+            let loadedAccount = try await bankAccountsProtocol.getBankAccount(userId: 1)
+            self.account = loadedAccount
+        } catch {
+            onError(error, "AnalyticsViewModel.loadTransactions", "Не удалось загрузить банковский счет")
             return
         }
 
-        self.rawTransactions = loadedTransactions
+        guard let accountId = account?.id else {
+            onError(NSError(domain: "AnalyticsViewModel", code: 0, userInfo: [NSLocalizedDescriptionKey: "No account ID available"]), "AnalyticsViewModel.loadTransactions", "Не удалось загрузить транзакции")
+            return
+        }
+
+        do {
+            let loadedTransactions = try await transactionsProtocol.getTransactionsInTimeFrame(
+                accountId: accountId,
+                startDate: dayStart,
+                endDate: dayEnd
+            )
+            self.rawTransactions = loadedTransactions
+        } catch {
+            onError(error, "AnalyticsViewModel.loadTransactions", "Не удалось загрузить транзакции")
+            return
+        }
 
         let categoryDict = Dictionary(uniqueKeysWithValues: rawCategories.map { ($0.id, $0) })
 

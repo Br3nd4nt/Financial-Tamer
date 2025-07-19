@@ -9,6 +9,7 @@ import SwiftUI
 
 struct TransactionsListView: View {
     @StateObject private var viewModel: TransactionsListViewModel
+    @StateObject private var errorHandler = ErrorHandler()
 
     @State private var showHistoryView = false
     @State private var selectedTransaction: TransactionFull?
@@ -19,7 +20,10 @@ struct TransactionsListView: View {
     init(direction: Direction) {
         self.direction = direction
         _viewModel = StateObject(
-            wrappedValue: TransactionsListViewModel(direction: direction)
+            wrappedValue: TransactionsListViewModel(
+                direction: direction,
+                errorHandler: ErrorHandler()
+            )
         )
     }
 
@@ -76,36 +80,46 @@ struct TransactionsListView: View {
                 }
             }
         }
-        .fullScreenCover(item: $selectedTransaction) { transaction in
-            TransactionEditView(transaction: transaction)
-        }
-        .fullScreenCover(isPresented: $showCreateTransaction, onDismiss: {
-            Task { await viewModel.loadTransactions() }
-        }) {
-            TransactionEditView(direction: direction)
-        }
-        .overlay(
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    Button(action: { showCreateTransaction = true }) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 28, weight: .bold))
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Circle().fill(Color.accentColor))
-                            .shadow(radius: 4)
-                    }
-                    .padding()
-                }
-            }
-        )
     }
 
     var body: some View {
         NavigationStack {
-            content
+            Group {
+                if viewModel.isLoading {
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                            .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+
+                        Text("Загрузка транзакций...")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color(.systemGroupedBackground))
+                } else if viewModel.transactionRows.isEmpty {
+                    VStack(spacing: 16) {
+                        Image(systemName: "list.bullet.clipboard")
+                            .font(.system(size: 48))
+                            .foregroundColor(.secondary)
+
+                        Text("Нет транзакций")
+                            .font(.title2)
+                            .fontWeight(.medium)
+                            .foregroundColor(.primary)
+
+                        Text("Здесь будут отображаться ваши \(direction == .income ? "доходы" : "расходы")")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color(.systemGroupedBackground))
+                } else {
+                    content
+                }
+            }
             .navigationTitle(direction == .income ? Constants.incomeToday : Constants.outcomeToday)
             .toolbar {
                 showHistoryButton
@@ -113,9 +127,47 @@ struct TransactionsListView: View {
             .navigationDestination(isPresented: $showHistoryView) {
                 HistoryView(direction: direction)
             }
+            .fullScreenCover(item: $selectedTransaction) { transaction in
+                TransactionEditView(transaction: transaction)
+            }
+            .fullScreenCover(isPresented: $showCreateTransaction, onDismiss: {
+                Task { await viewModel.loadTransactions() }
+            }) {
+                TransactionEditView(direction: direction)
+            }
+            .overlay(
+                Group {
+                    if !viewModel.isLoading {
+                        VStack {
+                            Spacer()
+                            HStack {
+                                Spacer()
+                                Button(action: { showCreateTransaction = true }) {
+                                    Image(systemName: "plus")
+                                        .font(.system(size: 28, weight: .bold))
+                                        .foregroundColor(.white)
+                                        .padding()
+                                        .background(Circle().fill(Color.accentColor))
+                                        .shadow(radius: 4)
+                                }
+                                .padding()
+                            }
+                        }
+                    }
+                }
+            )
+            .task {
+                await viewModel.loadTransactions()
+            }
+            .refreshable {
+                // Does not refresh for some reason
+                // It detects two gestures and they cancel each other?..
+                await viewModel.loadTransactions()
+            }
+            .errorAlert(errorHandler: errorHandler)
         }
-        .task {
-            await viewModel.loadTransactions()
+        .onAppear {
+            viewModel.errorHandler = errorHandler
         }
     }
 

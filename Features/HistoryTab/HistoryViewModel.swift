@@ -1,29 +1,25 @@
 //
-//  HistoryModelView.swift
+//  HistoryViewModel.swift
 //  Financial Tamer
 //
 //  Created by br3nd4nt on 21.06.2025.
 //
 
 import Foundation
-import SwiftUI
 
 @MainActor
 final class HistoryViewModel: ObservableObject {
     @Published var transactionRows: [TransactionFull] = []
-    @Published var dayStart: Date {
-        didSet { reloadData() }
-    }
-
-    @Published var dayEnd: Date {
-        didSet { reloadData() }
-    }
+    @Published var isLoading = false
 
     @Published var sortOption: TransactionSortOption = .byDate {
         didSet {
             transactionRows.sort(by: sortTransactions)
         }
     }
+
+    @Published var dayStart: Date
+    @Published var dayEnd: Date
 
     private var rawTransactions: [Transaction] = []
     private var rawCategories: [Category] = []
@@ -34,6 +30,7 @@ final class HistoryViewModel: ObservableObject {
     private let transactionsProtocol: TransactionsProtocol
     private let categoriesProtocol: CategoriesProtocol
     private let bankAccountsProtocol: BankAccountsProtocol
+    var errorHandler: ErrorHandler
 
     var total: Decimal {
         transactionRows.reduce(0) { result, row in
@@ -49,42 +46,59 @@ final class HistoryViewModel: ObservableObject {
         direction: Direction,
         startDate: Date,
         endDate: Date,
-        transactionsProtocol: TransactionsProtocol = TransactionsServiceMock.shared,
-        categoriesProtocol: CategoriesProtocol = CategoriesServiceMock.shared,
-        bankAccountsProtocol: BankAccountsProtocol = BankAccountsServiceMock.shared
+        transactionsProtocol: TransactionsProtocol = ServiceFactory.shared.transactionsService,
+        categoriesProtocol: CategoriesProtocol = ServiceFactory.shared.categoriesService,
+        bankAccountsProtocol: BankAccountsProtocol = ServiceFactory.shared.bankAccountsService,
+        errorHandler: ErrorHandler
     ) {
         self.direction = direction
+        self.dayStart = startDate
+        self.dayEnd = endDate
         self.transactionsProtocol = transactionsProtocol
         self.categoriesProtocol = categoriesProtocol
         self.bankAccountsProtocol = bankAccountsProtocol
-        self.dayStart = startDate
-        self.dayEnd = endDate
+        self.errorHandler = errorHandler
     }
 
     func loadTransactions() async {
-        guard let loadedCategories = try? await categoriesProtocol.getCategories() else {
-            print("Failed to load categories")
+        isLoading = true
+
+        do {
+            let loadedCategories = try await categoriesProtocol.getCategories()
+            self.rawCategories = loadedCategories
+        } catch {
+            errorHandler.handleError(error, context: "HistoryViewModel.loadTransactions", userMessage: "Не удалось загрузить категории")
+            isLoading = false
             return
         }
 
-        self.rawCategories = loadedCategories
-
-        guard let loadedAccount = try? await bankAccountsProtocol.getBankAccount(userId: 1) else {
-            print("Failed to load bank account")
-            return
-        }
-        self.account = loadedAccount
-
-        guard let loadedTransactions = try? await transactionsProtocol.getTransactionsInTimeFrame(
-            userId: 1,
-            startDate: dayStart,
-            endDate: dayEnd
-        ) else {
-            print("Failed to load transactions")
+        do {
+            let loadedAccount = try await bankAccountsProtocol.getBankAccount(userId: 1)
+            self.account = loadedAccount
+        } catch {
+            errorHandler.handleError(error, context: "HistoryViewModel.loadTransactions", userMessage: "Не удалось загрузить банковский счет")
+            isLoading = false
             return
         }
 
-        self.rawTransactions = loadedTransactions
+        guard let accountId = account?.id else {
+            errorHandler.handleError(NSError(domain: "HistoryViewModel", code: 0, userInfo: [NSLocalizedDescriptionKey: "No account ID available"]), context: "HistoryViewModel.loadTransactions", userMessage: "Не удалось загрузить транзакции")
+            isLoading = false
+            return
+        }
+
+        do {
+            let loadedTransactions = try await transactionsProtocol.getTransactionsInTimeFrame(
+                accountId: accountId,
+                startDate: dayStart,
+                endDate: dayEnd
+            )
+            self.rawTransactions = loadedTransactions
+        } catch {
+            errorHandler.handleError(error, context: "HistoryViewModel.loadTransactions", userMessage: "Не удалось загрузить транзакции")
+            isLoading = false
+            return
+        }
 
         let categoryDict = Dictionary(uniqueKeysWithValues: rawCategories.map { ($0.id, $0) })
 
@@ -104,13 +118,12 @@ final class HistoryViewModel: ObservableObject {
         }
 
         self.transactionRows = rows
+        isLoading = false
     }
 
-    private func reloadData() {
-        Task {
-            await loadTransactions()
-            transactionRows.sort(by: sortTransactions)
-        }
+    enum SortOption: String, CaseIterable {
+        case byDate = "По дате"
+        case byAmount = "По сумме"
     }
 
     private func sortTransactions(_ lhs: TransactionFull, _ rhs: TransactionFull) -> Bool {
