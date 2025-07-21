@@ -9,12 +9,14 @@ import SwiftUI
 
 struct AnalyticsViewControllerWrapper: UIViewControllerRepresentable {
     private let direction: Direction
+    @StateObject private var errorHandler = ErrorHandler()
 
     init(_ direction: Direction) {
         self.direction = direction
     }
+
     func makeUIViewController(context: Context) -> AnalyticsViewController {
-        let vc = AnalyticsViewController(direction)
+        let vc = AnalyticsViewController(direction, errorHandler: errorHandler)
 
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()

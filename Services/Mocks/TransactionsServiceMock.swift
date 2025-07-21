@@ -147,8 +147,8 @@ final class TransactionsServiceMock: TransactionsProtocol {
         )
     ]
 
-    func getTransactionsInTimeFrame(userId: Int, startDate: Date, endDate: Date) async throws -> [Transaction] {
-        mockTransactions.filter { $0.accountId == userId && $0.transactionDate >= startDate && $0.transactionDate <= endDate }
+    func getTransactionsInTimeFrame(accountId: Int, startDate: Date, endDate: Date) async throws -> [Transaction] {
+        mockTransactions.filter { $0.accountId == accountId && $0.transactionDate >= startDate && $0.transactionDate <= endDate }
     }
 
     func createTransaction(transaction: Transaction) async throws -> Transaction {

@@ -10,6 +10,9 @@ import Foundation
 @MainActor
 final class TransactionsListViewModel: ObservableObject {
     @Published var transactionRows: [TransactionFull] = []
+    @Published var isLoading = false
+
+
 
     @Published var sortOption: TransactionSortOption = .byDate {
         didSet {
@@ -26,6 +29,7 @@ final class TransactionsListViewModel: ObservableObject {
     private let transactionsProtocol: TransactionsProtocol
     private let categoriesProtocol: CategoriesProtocol
     private let bankAccountsProtocol: BankAccountsProtocol
+    var errorHandler: ErrorHandler
 
     private var dayStart: Date = Calendar.current.startOfDay(for: Date())
     private var dayEnd: Date = {
@@ -48,42 +52,85 @@ final class TransactionsListViewModel: ObservableObject {
 
     init(
         direction: Direction,
-        transactionsProtocol: TransactionsProtocol = TransactionsServiceMock.shared,
-        categoriesProtocol: CategoriesProtocol = CategoriesServiceMock.shared,
-        bankAccountsProtocol: BankAccountsProtocol = BankAccountsServiceMock.shared
+        transactionsProtocol: TransactionsProtocol = ServiceFactory.shared.transactionsService,
+        categoriesProtocol: CategoriesProtocol = ServiceFactory.shared.categoriesService,
+        bankAccountsProtocol: BankAccountsProtocol = ServiceFactory.shared.bankAccountsService,
+        errorHandler: ErrorHandler
     ) {
         self.direction = direction
         self.transactionsProtocol = transactionsProtocol
         self.categoriesProtocol = categoriesProtocol
         self.bankAccountsProtocol = bankAccountsProtocol
+        self.errorHandler = errorHandler
     }
 
     func loadTransactions() async {
-        guard let loadedCategories = try? await categoriesProtocol.getCategories() else {
-            print("Fairled to load categories")
+        print("Starting loadTransactions...")
+        isLoading = true
+
+        do {
+            print("Loading categories...")
+            let loadedCategories = try await categoriesProtocol.getCategories()
+            self.rawCategories = loadedCategories
+            print("Categories loaded successfully: \(loadedCategories.count) categories")
+        } catch {
+            print("Failed to load categories: \(error)")
+            if let urlError = error as? URLError, urlError.code == .cancelled {
+                print("Categories request was cancelled during refresh")
+                isLoading = false
+                return
+            }
+            errorHandler.handleError(error, context: "TransactionsListViewModel.loadTransactions", userMessage: "Не удалось загрузить категории")
+            isLoading = false
             return
         }
 
-        self.rawCategories = loadedCategories
-
-        guard let loadedAccount = try? await bankAccountsProtocol.getBankAccount(userId: 1) else {
-            print("Failed to load bank account")
+        do {
+            print("Loading bank account...")
+            let loadedAccount = try await bankAccountsProtocol.getBankAccount(userId: 1)
+            self.account = loadedAccount
+            print("Bank account loaded successfully: \(loadedAccount.id)")
+        } catch {
+            print("Failed to load bank account: \(error)")
+            if let urlError = error as? URLError, urlError.code == .cancelled {
+                print("Bank account request was cancelled during refresh")
+                isLoading = false
+                return
+            }
+            errorHandler.handleError(error, context: "TransactionsListViewModel.loadTransactions", userMessage: "Не удалось загрузить банковский счет")
+            isLoading = false
             return
         }
-        self.account = loadedAccount
 
-        guard let loadedTransactions = try? await transactionsProtocol.getTransactionsInTimeFrame(
-            userId: 1,
-            startDate: dayStart,
-            endDate: dayEnd
-        ) else {
-            print("Fairled to load transactions")
+        guard let accountId = account?.id else {
+            errorHandler.handleError(NSError(domain: "TransactionsListViewModel", code: 0, userInfo: [NSLocalizedDescriptionKey: "No account ID available"]), context: "TransactionsListViewModel.loadTransactions", userMessage: "Не удалось загрузить транзакции")
+            isLoading = false
             return
         }
 
-        self.rawTransactions = loadedTransactions
+        do {
+            let loadedTransactions = try await transactionsProtocol.getTransactionsInTimeFrame(
+                accountId: accountId,
+                startDate: dayStart,
+                endDate: dayEnd
+            )
+            self.rawTransactions = loadedTransactions
+        } catch {
+            print("Failed to load transactions: \(error)")
+            if let urlError = error as? URLError, urlError.code == .cancelled {
+                print("Transactions request was cancelled during refresh")
+                isLoading = false
+                return
+            }
+            errorHandler.handleError(error, context: "TransactionsListViewModel.loadTransactions", userMessage: "Не удалось загрузить транзакции")
+            isLoading = false
+            return
+        }
 
-        let categoryDict = Dictionary(uniqueKeysWithValues: rawCategories.map { ($0.id, $0) })
+        let categoryDict = Dictionary(grouping: rawCategories) { $0.id }
+            .compactMapValues { categories in
+                categories.first
+            }
 
         let rows = rawTransactions.compactMap { transaction -> TransactionFull? in
             guard let category = categoryDict[transaction.categoryId] else {
@@ -101,11 +148,7 @@ final class TransactionsListViewModel: ObservableObject {
         }
 
         self.transactionRows = rows
-    }
-
-    enum SortOption: String, CaseIterable {
-        case byDate = "По дате"
-        case byAmount = "По сумме"
+        isLoading = false
     }
 
     private func sortTransactions(_ lhs: TransactionFull, _ rhs: TransactionFull) -> Bool {

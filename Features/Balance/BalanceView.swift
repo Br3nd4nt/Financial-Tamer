@@ -10,22 +10,30 @@ import UIKit
 
 // i removed background color for rows because they look ugly...
 struct BalanceView: View {
-    @StateObject private var viewModel = BalanceViewModel()
-    @State private var showCurrencyMenu = false
+    @StateObject private var viewModel: BalanceViewModel
+    @StateObject private var errorHandler = ErrorHandler()
+
+    @State private var balanceInput = ""
     @FocusState private var isBalanceFieldFocused: Bool
-    @State private var balanceInput = Constants.empty
+    @State private var showCurrencyMenu = false
     @State private var editedCurrency: Currency?
-    @State private var initialBalance: String = Constants.empty
+    @State private var initialBalance: String?
     @State private var initialCurrency: Currency?
 
     @State private var spoilerIsOn = true
+
+    init() {
+        _viewModel = StateObject(wrappedValue: BalanceViewModel(errorHandler: ErrorHandler()))
+    }
 
     private var balanceRow: some View {
         HStack {
             Text(Constants.moneyBagSymbol)
             Text(Constants.balanceTitle)
             Spacer()
-            if let account = viewModel.account {
+            if viewModel.isLoading {
+                ProgressView(Constants.loading)
+            } else if let account = viewModel.account {
                 ZStack {
                     if viewModel.state == .redacting {
                         TextField(Constants.balanceTitle, text: $balanceInput)
@@ -33,7 +41,6 @@ struct BalanceView: View {
                             .focused($isBalanceFieldFocused)
                             .multilineTextAlignment(.trailing)
                             .onAppear {
-                                // Set up editing state
                                 let formatted = String(describing: account.balance)
                                 balanceInput = formatted
                                 initialBalance = formatted
@@ -44,7 +51,6 @@ struct BalanceView: View {
                                 }
                             }
                             .onChange(of: balanceInput) { _, newValue in
-                                // Filter input, but do not update model
                                 var filtered = newValue.replacingOccurrences(of: Constants.comma, with: Constants.dot)
                                 filtered = filtered.filter { Constants.decimalCharacters.contains($0) }
                                 if let firstDotIndex = filtered.firstIndex(of: Constants.dot.first!) {
@@ -65,7 +71,8 @@ struct BalanceView: View {
                 }
                 .animation(.default, value: viewModel.state)
             } else {
-                ProgressView(Constants.loading)
+                Text(Constants.noAccount)
+                    .foregroundColor(.secondary)
             }
         }
         .contentShape(Rectangle())
@@ -74,7 +81,6 @@ struct BalanceView: View {
                 isBalanceFieldFocused = true
             }
         }
-//        .listRowBackground(viewModel.state == .viewing ? .activeTab : Color(.systemBackground))
         .animation(.default, value: viewModel.state)
     }
 
@@ -82,7 +88,9 @@ struct BalanceView: View {
         HStack {
             Text(Constants.currencyTitle)
             Spacer()
-            if let account = viewModel.account {
+            if viewModel.isLoading {
+                ProgressView(Constants.loading)
+            } else if let account = viewModel.account {
                 Text((editedCurrency ?? account.currency).symbol)
                 if viewModel.state == .redacting {
                     Image(systemName: Constants.chevronRight)
@@ -91,7 +99,8 @@ struct BalanceView: View {
                         .transition(.opacity)
                 }
             } else {
-                ProgressView(Constants.loading)
+                Text(Constants.noAccount)
+                    .foregroundColor(.secondary)
             }
         }
         .contentShape(Rectangle())
@@ -100,7 +109,6 @@ struct BalanceView: View {
                 showCurrencyMenu = true
             }
         }
-//        .listRowBackground(viewModel.state == .viewing ? .categoryBackground : Color(.systemBackground))
         .animation(.default, value: viewModel.state)
     }
 
@@ -181,6 +189,15 @@ struct BalanceView: View {
             .onShake {
                 spoilerIsOn.toggle()
             }
+            .onReceive(NotificationCenter.default.publisher(for: .accountBalanceUpdatedNotification)) { _ in
+                Task {
+                    await viewModel.refreshAccount()
+                }
+            }
+            .errorAlert(errorHandler: errorHandler)
+        }
+        .onAppear {
+            viewModel.errorHandler = errorHandler
         }
     }
 
@@ -201,6 +218,7 @@ struct BalanceView: View {
         static let dot = "."
         static let empty = ""
         static let loading = "Загрузка..."
+        static let noAccount = "Нет данных"
     }
 }
 

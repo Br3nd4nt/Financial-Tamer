@@ -20,6 +20,8 @@ final class TransactionEditViewModel: ObservableObject {
     private var editingTransaction: TransactionFull?
     private let categoriesProtocol: CategoriesProtocol
     private let bankAccountsProtocol: BankAccountsProtocol
+    private let transactionsProtocol: TransactionsProtocol
+    var onError: (Error, String, String?) -> Void
     private let direction: Direction?
 
     var canSave: Bool {
@@ -29,11 +31,15 @@ final class TransactionEditViewModel: ObservableObject {
     init(
         transaction: TransactionFull? = nil,
         direction: Direction? = nil,
-        categoriesProtocol: CategoriesProtocol = CategoriesServiceMock.shared,
-        bankAccountsProtocol: BankAccountsProtocol = BankAccountsServiceMock.shared
+        categoriesProtocol: CategoriesProtocol = ServiceFactory.shared.categoriesService,
+        bankAccountsProtocol: BankAccountsProtocol = ServiceFactory.shared.bankAccountsService,
+        transactionsProtocol: TransactionsProtocol = ServiceFactory.shared.transactionsService,
+        onError: @escaping (Error, String, String?) -> Void
     ) {
         self.categoriesProtocol = categoriesProtocol
         self.bankAccountsProtocol = bankAccountsProtocol
+        self.transactionsProtocol = transactionsProtocol
+        self.onError = onError
         self.direction = direction
         if let transaction {
             self.isEditing = true
@@ -59,15 +65,22 @@ final class TransactionEditViewModel: ObservableObject {
 
     func fetchCategories() async {
         let loadedCategories: [Category]
-        if let direction {
-            loadedCategories = (try? await categoriesProtocol.getCategoriesDyDirection(direction: direction)) ?? []
-        } else {
-            loadedCategories = (try? await categoriesProtocol.getCategories()) ?? []
-        }
-        if loadedCategories.isEmpty {
-            print("Failed to load categories")
+        do {
+            if let direction {
+                loadedCategories = try await categoriesProtocol.getCategoriesDyDirection(direction: direction)
+            } else {
+                loadedCategories = try await categoriesProtocol.getCategories()
+            }
+        } catch {
+            onError(error, "TransactionEditViewModel.fetchCategories", "Не удалось загрузить категории")
             return
         }
+
+        if loadedCategories.isEmpty {
+            onError(NSError(domain: "TransactionEditViewModel", code: 0, userInfo: [NSLocalizedDescriptionKey: "No categories available"]), "TransactionEditViewModel.fetchCategories", "Категории не найдены")
+            return
+        }
+
         self.categories = loadedCategories
         if let current = self.category {
             self.category = loadedCategories.first { $0.id == current.id }
@@ -78,12 +91,21 @@ final class TransactionEditViewModel: ObservableObject {
         guard let category, amount > 0 else {
             return
         }
+
         if isEditing {
-            guard let old = editingTransaction, let account = try? await bankAccountsProtocol.getBankAccount(
-                userId: 1
-            ) else {
+            guard let old = editingTransaction else {
+                onError(NSError(domain: "TransactionEditViewModel", code: 0, userInfo: [NSLocalizedDescriptionKey: "No transaction to edit"]), "TransactionEditViewModel.saveTransaction", "Ошибка редактирования транзакции")
                 return
             }
+
+            let account: BankAccount
+            do {
+                account = try await bankAccountsProtocol.getBankAccount(userId: 1)
+            } catch {
+                onError(error, "TransactionEditViewModel.saveTransaction", "Не удалось загрузить банковский счет")
+                return
+            }
+
             let updatedTransaction = Transaction(
                 id: old.id,
                 accountId: account.id,
@@ -94,13 +116,23 @@ final class TransactionEditViewModel: ObservableObject {
                 createdAt: old.createdAt,
                 updatedAt: Date()
             )
-            _ = try? await TransactionsServiceMock.shared.updateTransaction(transaction: updatedTransaction)
-        } else {
-            guard let account = try? await bankAccountsProtocol.getBankAccount(
-                userId: 1
-            ) else {
+
+            do {
+                _ = try await transactionsProtocol.updateTransaction(transaction: updatedTransaction)
+                NotificationCenter.default.post(name: .accountBalanceUpdatedNotification, object: nil)
+            } catch {
+                onError(error, "TransactionEditViewModel.saveTransaction", "Не удалось обновить транзакцию")
                 return
             }
+        } else {
+            let account: BankAccount
+            do {
+                account = try await bankAccountsProtocol.getBankAccount(userId: 1)
+            } catch {
+                onError(error, "TransactionEditViewModel.saveTransaction", "Не удалось загрузить банковский счет")
+                return
+            }
+
             let newTransaction = Transaction(
                 id: Int.random(in: 1000...9999),
                 accountId: account.id,
@@ -111,7 +143,15 @@ final class TransactionEditViewModel: ObservableObject {
                 createdAt: Date(),
                 updatedAt: Date()
             )
-            _ = try? await TransactionsServiceMock.shared.createTransaction(transaction: newTransaction)
+
+            do {
+                _ = try await transactionsProtocol.createTransaction(transaction: newTransaction)
+                NotificationCenter.default.post(name: .accountBalanceUpdatedNotification, object: nil)
+            } catch {
+                onError(error, "TransactionEditViewModel.saveTransaction", "Не удалось создать транзакцию")
+                return
+            }
+
             self.category = nil
             self.amount = 0
             self.amountString = ""
@@ -122,8 +162,15 @@ final class TransactionEditViewModel: ObservableObject {
 
     func deleteTransaction() async {
         guard let old = editingTransaction else {
+            onError(NSError(domain: "TransactionEditViewModel", code: 0, userInfo: [NSLocalizedDescriptionKey: "No transaction to delete"]), "TransactionEditViewModel.deleteTransaction", "Ошибка удаления транзакции")
             return
         }
-        _ = try? await TransactionsServiceMock.shared.deleteTransaction(id: old.id)
+
+        do {
+            try await transactionsProtocol.deleteTransaction(id: old.id)
+            NotificationCenter.default.post(name: .accountBalanceUpdatedNotification, object: nil)
+        } catch {
+            onError(error, "TransactionEditViewModel.deleteTransaction", "Не удалось удалить транзакцию")
+        }
     }
 }

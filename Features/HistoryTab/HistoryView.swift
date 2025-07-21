@@ -9,6 +9,7 @@ import SwiftUI
 
 struct HistoryView: View {
     @StateObject private var viewModel: HistoryViewModel
+    @StateObject private var errorHandler = ErrorHandler()
 
     @State private var showAnalytics = false
     @State private var selectedTransaction: TransactionFull?
@@ -29,7 +30,12 @@ struct HistoryView: View {
         }()
         maximumDate = dayEnd
         _viewModel = StateObject(
-            wrappedValue: HistoryViewModel(direction: direction, startDate: dayStart, endDate: dayEnd)
+            wrappedValue: HistoryViewModel(
+                direction: direction,
+                startDate: dayStart,
+                endDate: dayEnd,
+                errorHandler: ErrorHandler()
+            )
         )
     }
 
@@ -82,7 +88,7 @@ struct HistoryView: View {
             Text(Constants.sortTitle)
                 .font(.callout)
             Picker(Constants.sortTitle, selection: $viewModel.sortOption) {
-                ForEach(TransactionSortOption.allCases, id: \ .self) {
+                ForEach(TransactionSortOption.allCases, id: \.self) {
                     Text("\($0.rawValue)")
                 }
             }
@@ -115,10 +121,10 @@ struct HistoryView: View {
                         }
                     }
                 }
-                .fullScreenCover(item: $selectedTransaction) { transaction in
-                    TransactionEditView(transaction: transaction)
-                }
             }
+        }
+        .fullScreenCover(item: $selectedTransaction) { transaction in
+            TransactionEditView(transaction: transaction)
         }
         .navigationTitle(Constants.title)
         .toolbar {
@@ -138,10 +144,17 @@ struct HistoryView: View {
         .task {
             await viewModel.loadTransactions()
         }
+        .refreshable {
+            await viewModel.loadTransactions()
+        }
+        .errorAlert(errorHandler: errorHandler)
         .navigationDestination(isPresented: $showAnalytics) {
             AnalyticsViewControllerWrapper(direction)
                 .navigationTitle("Анализ")
-                .ignoresSafeArea(.all) // To make toolbar the same background color
+                .ignoresSafeArea(.all)
+        }
+        .onAppear {
+            viewModel.errorHandler = errorHandler
         }
     }
 
