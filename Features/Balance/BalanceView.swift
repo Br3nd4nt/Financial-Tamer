@@ -32,7 +32,7 @@ struct BalanceView: View {
             Text(Constants.balanceTitle)
             Spacer()
             if viewModel.isLoading {
-                ProgressView(Constants.loading)
+                loadingView
             } else if let account = viewModel.account {
                 ZStack {
                     if viewModel.state == .redacting {
@@ -89,7 +89,7 @@ struct BalanceView: View {
             Text(Constants.currencyTitle)
             Spacer()
             if viewModel.isLoading {
-                ProgressView(Constants.loading)
+                loadingView
             } else if let account = viewModel.account {
                 Text((editedCurrency ?? account.currency).symbol)
                 if viewModel.state == .redacting {
@@ -110,6 +110,10 @@ struct BalanceView: View {
             }
         }
         .animation(.default, value: viewModel.state)
+    }
+
+    private var loadingView: some View {
+        ProgressView(Constants.loading)
     }
 
     var body: some View {
@@ -205,9 +209,9 @@ struct BalanceView: View {
         static let title = "Мой счёт"
         static let vStackSpacing: Double = 16
         static let balanceTitle = "Баланс"
-        static let moneyBagSymbol = "💰"
+        static let moneyBagSymbol = Images.moneyBag
         static let currencyTitle = "Валюта"
-        static let chevronRight = "chevron.right"
+        static let chevronRight = Images.chevronRight
         static let chevronFontSize: Double = 13
         static let editButton = "Редактировать"
         static let saveButton = "Сохранить"
@@ -219,6 +223,10 @@ struct BalanceView: View {
         static let empty = ""
         static let loading = "Загрузка..."
         static let noAccount = "Нет данных"
+        struct Images {
+            static let moneyBag = "💰"
+            static let chevronRight = "chevron.right"
+        }
     }
 }
 

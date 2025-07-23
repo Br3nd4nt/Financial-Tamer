@@ -48,7 +48,7 @@ struct TransactionsListView: View {
                     showHistoryView = true
                 },
                 label: {
-                    Image(systemName: Constants.toolbarIcon)
+                    Image(systemName: Constants.Images.clock)
                         .font(.headline)
                         .padding(Constants.toolbarIconPadding)
                 }
@@ -64,7 +64,57 @@ struct TransactionsListView: View {
         }
     }
 
-    private var content: some View {
+    private var loadingView: some View {
+        VStack(spacing: Constants.loadingVStackSpacing) {
+            ProgressView()
+                .scaleEffect(Constants.progressScale)
+                .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+            Text(Constants.loadingText)
+                .font(.body)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(.systemGroupedBackground))
+    }
+
+    private var emptyView: some View {
+        VStack(spacing: Constants.emptyVStackSpacing) {
+            Image(systemName: Constants.Images.emptyList)
+                .font(.system(size: Constants.emptyListIconSize))
+                .foregroundColor(.secondary)
+            Text(Constants.noTransactionsText)
+                .font(.title2)
+                .fontWeight(.medium)
+                .foregroundColor(.primary)
+            Text(direction == .income ? Constants.emptyIncomeText : Constants.emptyOutcomeText)
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(.systemGroupedBackground))
+    }
+
+    private var floatingPlusButton: some View {
+        VStack {
+            Spacer()
+            HStack {
+                Spacer()
+                Button(action: { showCreateTransaction = true }) {
+                    Image(systemName: Constants.Images.plus)
+                        .font(.system(size: Constants.plusIconSize, weight: .bold))
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Circle().fill(Color.accentColor))
+                        .shadow(radius: Constants.plusIconShadowRadius)
+                }
+                .padding()
+            }
+        }
+    }
+
+    private var mainContent: some View {
         VStack(alignment: .leading, spacing: Constants.vStackSpacing) {
             List {
                 Section {
@@ -87,38 +137,11 @@ struct TransactionsListView: View {
         NavigationStack {
             Group {
                 if viewModel.isLoading {
-                    VStack(spacing: 16) {
-                        ProgressView()
-                            .scaleEffect(1.5)
-                            .progressViewStyle(CircularProgressViewStyle(tint: .blue))
-
-                        Text("Загрузка транзакций...")
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color(.systemGroupedBackground))
+                    loadingView
                 } else if viewModel.transactionRows.isEmpty {
-                    VStack(spacing: 16) {
-                        Image(systemName: "list.bullet.clipboard")
-                            .font(.system(size: 48))
-                            .foregroundColor(.secondary)
-
-                        Text("Нет транзакций")
-                            .font(.title2)
-                            .fontWeight(.medium)
-                            .foregroundColor(.primary)
-
-                        Text("Здесь будут отображаться ваши \(direction == .income ? "доходы" : "расходы")")
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color(.systemGroupedBackground))
+                    emptyView
                 } else {
-                    content
+                    mainContent
                 }
             }
             .navigationTitle(direction == .income ? Constants.incomeToday : Constants.outcomeToday)
@@ -139,27 +162,11 @@ struct TransactionsListView: View {
             .overlay(
                 Group {
                     if !viewModel.isLoading {
-                        VStack {
-                            Spacer()
-                            HStack {
-                                Spacer()
-                                Button(action: { showCreateTransaction = true }) {
-                                    Image(systemName: "plus")
-                                        .font(.system(size: 28, weight: .bold))
-                                        .foregroundColor(.white)
-                                        .padding()
-                                        .background(Circle().fill(Color.accentColor))
-                                        .shadow(radius: 4)
-                                }
-                                .padding()
-                            }
-                        }
+                        floatingPlusButton
                     }
                 }
             )
             .refreshable {
-                // Does not refresh for some reason
-                // It detects two gestures and they cancel each other?..
                 await viewModel.loadTransactions()
             }
             .errorAlert(errorHandler: errorHandler)
@@ -178,8 +185,25 @@ struct TransactionsListView: View {
         static let totalTitle = "Всего"
         static let operationsTitle = "Операции"
         static let currencySymbol = "₽"
-        static let toolbarIcon = "clock"
+        static let toolbarIcon = Images.clock
         static let toolbarIconPadding: Double = 8
+        static let loadingVStackSpacing: Double = 16
+        static let progressScale = 1.5
+        static let loadingText = "Загрузка транзакций..."
+        static let emptyVStackSpacing: Double = 16
+        static let noTransactionsText = "Нет транзакций"
+        static let emptyIncomeText = "Здесь будут отображаться ваши доходы"
+        static let emptyOutcomeText = "Здесь будут отображаться ваши расходы"
+        static let plusIconSize: Double = 28
+        static let plusIconShadowRadius: Double = 4
+        struct Images {
+            static let emptyList = "list.bullet.clipboard"
+            static let plus = "plus"
+            static let clock = "clock"
+        }
+        static let emptyListIcon = Images.emptyList
+        static let emptyListIconSize: Double = 48
+        static let plusIcon = Images.plus
     }
 }
 

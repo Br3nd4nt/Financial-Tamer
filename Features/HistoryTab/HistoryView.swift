@@ -96,31 +96,86 @@ struct HistoryView: View {
         }
     }
 
+    private var totalRow: some View {
+        HStack {
+            Text(Constants.totalTitle)
+            Spacer()
+            Text(viewModel.total.formattedWithSeparator(currencySymbol: viewModel.currencySymbol))
+        }
+    }
+    private var loadingView: some View {
+        VStack(spacing: Constants.loadingVStackSpacing) {
+            ProgressView()
+                .scaleEffect(Constants.progressScale)
+                .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+            Text(Constants.loadingText)
+                .font(.body)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(.systemGroupedBackground))
+    }
+    private var emptyView: some View {
+        VStack(spacing: Constants.emptyVStackSpacing) {
+            Image(systemName: Constants.emptyIcon)
+                .font(.system(size: Constants.emptyIconSize))
+                .foregroundColor(.secondary)
+            Text(Constants.noTransactionsText)
+                .font(.title2)
+                .fontWeight(.medium)
+                .foregroundColor(.primary)
+            Text(Constants.emptyDescription)
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(.systemGroupedBackground))
+    }
+    private var analyticsButton: some View {
+        Button(
+            action: {
+                showAnalytics = true
+            },
+            label: {
+                Image(systemName: Constants.toolbarIcon)
+                    .font(.headline)
+                    .padding(Constants.toolbarIconPadding)
+            }
+        )
+    }
+    private var mainList: some View {
+        List {
+            Section {
+                startDatePicker
+                endDatePicker
+                sortPicker
+                totalRow
+            }
+            Section(Constants.operationsTitle) {
+                if viewModel.transactionRows.isEmpty {
+                    Text(Constants.noTransactionsText)
+                } else {
+                    ForEach(viewModel.transactionRows) { row in
+                        HistoryRow(fullTransaction: row)
+                            .onTapGesture {
+                                selectedTransaction = row
+                            }
+                    }
+                }
+            }
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: Constants.vStackSpacing) {
-            List {
-                Section {
-                    startDatePicker
-                    endDatePicker
-                    sortPicker
-                    HStack {
-                        Text(Constants.totalTitle)
-                        Spacer()
-                        Text(viewModel.total.formattedWithSeparator(currencySymbol: viewModel.currencySymbol))
-                    }
-                }
-                Section(Constants.operationsTitle) {
-                    if viewModel.transactionRows.isEmpty {
-                        Text("Нет транзакций")
-                    } else {
-                        ForEach(viewModel.transactionRows) { row in
-                            HistoryRow(fullTransaction: row)
-                                .onTapGesture {
-                                    selectedTransaction = row
-                                }
-                        }
-                    }
-                }
+            if viewModel.isLoading {
+                loadingView
+            } else if viewModel.transactionRows.isEmpty {
+                emptyView
+            } else {
+                mainList
             }
         }
         .fullScreenCover(item: $selectedTransaction) { transaction in
@@ -129,16 +184,7 @@ struct HistoryView: View {
         .navigationTitle(Constants.title)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button(
-                    action: {
-                        showAnalytics = true
-                    },
-                    label: {
-                        Image(systemName: Constants.toolbarIcon)
-                            .font(.headline)
-                            .padding(Constants.toolbarIconPadding)
-                    }
-                )
+                analyticsButton
             }
         }
         .task {
@@ -174,6 +220,14 @@ struct HistoryView: View {
         static let datePickerCornerRadius: Double = 10
         static let toolbarIcon = "document"
         static let toolbarIconPadding: Double = 8
+        static let loadingVStackSpacing: Double = 16
+        static let progressScale = 1.5
+        static let loadingText = "Загрузка истории..."
+        static let emptyVStackSpacing: Double = 16
+        static let emptyIcon = "tray"
+        static let emptyIconSize: Double = 48
+        static let noTransactionsText = "Нет транзакций"
+        static let emptyDescription = "Здесь будет отображаться ваша история операций"
     }
 }
 

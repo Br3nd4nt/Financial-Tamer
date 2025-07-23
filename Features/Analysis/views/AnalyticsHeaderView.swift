@@ -8,13 +8,29 @@
 import UIKit
 
 final class AnalyticsHeaderView: UIView {
-    private let startDateRow = AnalyticsParamView("Начало")
-    private let endDateRow = AnalyticsParamView("Конец")
+    private enum Constants {
+        static let startTitle = "Начало"
+        static let endTitle = "Конец"
+        static let totalTitle = "Всего"
+        static let selectorTitle = "Выберите метод сортировки"
+        static let stackLeftRightPadding: Double = 10
+        static let stackCornerRadius: Double = 12
+        static let selectorTopPadding: Double = 5
+        static let selectorLeftPadding: Double = 5
+        static let selectorRightPadding: Double = 5
+        static let selectorBottomPadding: Double = 5
+        static let separatorColor = UIColor.systemGray4
+        static let separatorHeight: Double = 1
+        static let rowHeight: Double = 44
+        static let selectorDefaultIndex = 1
+    }
+    private let startDateRow = AnalyticsParamView(Constants.startTitle)
+    private let endDateRow = AnalyticsParamView(Constants.endTitle)
     private let selectorWrap = UIView()
     private let selectorTitle = UILabel()
     // need to setup target later in the man viewcontroller
     let selector = UISegmentedControl()
-    private let totalRow = AnalyticsParamView("Всего", isDatePicker: false)
+    private let totalRow = AnalyticsParamView(Constants.totalTitle, isDatePicker: false)
 
     init() {
         super.init(frame: .zero)
@@ -26,38 +42,38 @@ final class AnalyticsHeaderView: UIView {
         stack.backgroundColor = .systemBackground
         for (index, view) in views.enumerated() {
             stack.addArrangedSubview(view)
-            view.setHeight(mode: .grOE, 44)
+            view.setHeight(mode: .grOE, Constants.rowHeight)
             if index < views.count - 1 {
                 let separator = UIView()
-                separator.backgroundColor = .systemGray4
+                separator.backgroundColor = Constants.separatorColor
                 separator.translatesAutoresizingMaskIntoConstraints = false
-                separator.setHeight(1)
+                separator.setHeight(Constants.separatorHeight)
                 stack.addArrangedSubview(separator)
             }
         }
         self.addSubview(stack)
         stack.pinTop(to: self)
         stack.pinBottom(to: self)
-        stack.pinLeft(to: self, 10)
-        stack.pinRight(to: self, 10)
-        stack.layer.cornerRadius = 12
+        stack.pinLeft(to: self, Constants.stackLeftRightPadding)
+        stack.pinRight(to: self, Constants.stackLeftRightPadding)
+        stack.layer.cornerRadius = Constants.stackCornerRadius
     }
 
     private func setupSelector() {
         selectorWrap.addSubview(selectorTitle)
-        selectorTitle.text = "Выберите метод сортировки"
-        selectorTitle.pinTop(to: selectorWrap, 5)
-        selectorTitle.pinLeft(to: selectorWrap, 5)
+        selectorTitle.text = Constants.selectorTitle
+        selectorTitle.pinTop(to: selectorWrap, Constants.selectorTopPadding)
+        selectorTitle.pinLeft(to: selectorWrap, Constants.selectorLeftPadding)
         let options = TransactionSortOption.allCases
         for (index, value) in options.enumerated() {
             selector.insertSegment(withTitle: value.rawValue, at: index, animated: false)
         }
         selectorWrap.addSubview(selector)
-        selector.selectedSegmentIndex = 1
-        selector.pinTop(to: selectorTitle.bottomAnchor, 5)
-        selector.pinLeft(to: selectorWrap, 5)
-        selector.pinRight(to: selectorWrap, 5)
-        selector.pinBottom(to: selectorWrap, 5)
+        selector.selectedSegmentIndex = Constants.selectorDefaultIndex
+        selector.pinTop(to: selectorTitle.bottomAnchor, Constants.selectorTopPadding)
+        selector.pinLeft(to: selectorWrap, Constants.selectorLeftPadding)
+        selector.pinRight(to: selectorWrap, Constants.selectorRightPadding)
+        selector.pinBottom(to: selectorWrap, Constants.selectorBottomPadding)
     }
 
     @available(*, unavailable)

@@ -1,3 +1,3 @@
 import Foundation
 
-public struct EmptyResponse: Decodable {} 
+public struct EmptyResponse: Decodable {}

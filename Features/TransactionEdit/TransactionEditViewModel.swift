@@ -89,7 +89,9 @@ final class TransactionEditViewModel: ObservableObject {
     }
 
     func saveTransaction() async {
-        guard !isSaving else { return }
+        guard !isSaving else {
+            return
+        }
         isSaving = true
         defer { isSaving = false }
         guard let category, amount > 0 else {

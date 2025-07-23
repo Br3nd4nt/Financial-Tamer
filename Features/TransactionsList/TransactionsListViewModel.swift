@@ -50,6 +50,8 @@ final class TransactionsListViewModel: ObservableObject {
         }
     }
 
+    private var accountBalanceObserver: NSObjectProtocol?
+
     init(
         direction: Direction,
         transactionsProtocol: TransactionsProtocol = ServiceFactory.shared.transactionsService,
@@ -62,7 +64,7 @@ final class TransactionsListViewModel: ObservableObject {
         self.categoriesProtocol = categoriesProtocol
         self.bankAccountsProtocol = bankAccountsProtocol
         self.errorHandler = errorHandler
-        NotificationCenter.default.addObserver(forName: .accountBalanceUpdatedNotification, object: nil, queue: .main) { [weak self] _ in
+        accountBalanceObserver = NotificationCenter.default.addObserver(forName: .accountBalanceUpdatedNotification, object: nil, queue: .main) { [weak self] _ in
             Task { await self?.loadTransactions() }
         }
     }
@@ -160,6 +162,12 @@ final class TransactionsListViewModel: ObservableObject {
             return lhs.transactionDate > rhs.transactionDate
         case .byAmount:
             return lhs.amount > rhs.amount
+        }
+    }
+
+    deinit {
+        if let observer = accountBalanceObserver {
+            NotificationCenter.default.removeObserver(observer)
         }
     }
 }
