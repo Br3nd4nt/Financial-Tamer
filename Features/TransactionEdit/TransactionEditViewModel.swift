@@ -149,7 +149,7 @@ final class TransactionEditViewModel: ObservableObject {
             )
 
             do {
-                _ = try await transactionsProtocol.createTransaction(transaction: newTransaction)
+                _ = try await transactionsProtocol.createTransaction(transaction: newTransaction, account: account, category: category)
                 NotificationCenter.default.post(name: .accountBalanceUpdatedNotification, object: nil)
             } catch {
                 onError(error, "TransactionEditViewModel.saveTransaction", "Не удалось создать транзакцию")

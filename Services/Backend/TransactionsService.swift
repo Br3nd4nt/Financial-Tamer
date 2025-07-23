@@ -67,7 +67,7 @@ final class TransactionsService: TransactionsProtocol {
         }
     }
 
-    func createTransaction(transaction: Transaction) async throws -> Transaction {
+    func createTransaction(transaction: Transaction, account: BankAccount, category: Category) async throws -> Transaction {
         do {
             let dto = ModelMapper.mapToCreateDTO(transaction)
             print("[DEBUG] Creating transaction DTO: \(dto)")
@@ -84,7 +84,8 @@ final class TransactionsService: TransactionsProtocol {
                 print("[DEBUG] Failed to encode CreateTransactionDTO to JSON")
             }
             let endpoint = TransactionsEndpoint.createTransaction(transaction: transaction)
-            let createdTransaction: Transaction = try await networkClient.request(endpoint, body: jsonData)
+            let createResponse: CreateTransactionResponseDTO = try await networkClient.request(endpoint, body: jsonData)
+            let createdTransaction = ModelMapper.map(createResponse, account: account, category: category)
             try await localStorage.create(createdTransaction)
             try await backupStorage.removeFromBackup(transaction.id)
             NetworkMonitor.shared.setOfflineMode(false)

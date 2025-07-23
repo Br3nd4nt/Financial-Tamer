@@ -102,4 +102,21 @@ struct ModelMapper {
             comment: transaction.comment
         )
     }
+
+    static func map(_ dto: CreateTransactionResponseDTO, account: BankAccount, category: Category) -> Transaction {
+        let amount = Decimal(string: dto.amount) ?? Decimal(0)
+        let transactionDate = dateFormatter.date(from: dto.transactionDate) ?? Date()
+        let createdAt = dateFormatter.date(from: dto.createdAt) ?? Date()
+        let updatedAt = dateFormatter.date(from: dto.updatedAt) ?? Date()
+        return Transaction(
+            id: dto.id,
+            accountId: dto.accountId,
+            categoryId: dto.categoryId,
+            amount: amount,
+            transactionDate: transactionDate,
+            comment: dto.comment ?? "",
+            createdAt: createdAt,
+            updatedAt: updatedAt
+        )
+    }
 }
