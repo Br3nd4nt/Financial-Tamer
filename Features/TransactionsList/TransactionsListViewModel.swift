@@ -87,7 +87,7 @@ final class TransactionsListViewModel: ObservableObject {
 
         do {
             print("Loading bank account...")
-            let loadedAccount = try await bankAccountsProtocol.getBankAccount(userId: 1)
+            let loadedAccount = try await bankAccountsProtocol.getBankAccount()
             self.account = loadedAccount
             print("Bank account loaded successfully: \(loadedAccount.id)")
         } catch {

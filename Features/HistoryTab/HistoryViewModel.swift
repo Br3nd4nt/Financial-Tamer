@@ -73,7 +73,7 @@ final class HistoryViewModel: ObservableObject {
         }
 
         do {
-            let loadedAccount = try await bankAccountsProtocol.getBankAccount(userId: 1)
+            let loadedAccount = try await bankAccountsProtocol.getBankAccount()
             self.account = loadedAccount
         } catch {
             errorHandler.handleError(error, context: "HistoryViewModel.loadTransactions", userMessage: "Не удалось загрузить банковский счет")

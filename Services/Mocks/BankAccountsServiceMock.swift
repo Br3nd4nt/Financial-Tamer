@@ -20,7 +20,7 @@ final class BankAccountsServiceMock: BankAccountsProtocol {
         updatedAt: Date.now
     )
 
-    func getBankAccount(userId: Int) async throws -> BankAccount {
+    func getBankAccount() async throws -> BankAccount {
         mockAccount
     }
 

@@ -100,7 +100,7 @@ final class TransactionEditViewModel: ObservableObject {
 
             let account: BankAccount
             do {
-                account = try await bankAccountsProtocol.getBankAccount(userId: 1)
+                account = try await bankAccountsProtocol.getBankAccount()
             } catch {
                 onError(error, "TransactionEditViewModel.saveTransaction", "Не удалось загрузить банковский счет")
                 return
@@ -127,7 +127,7 @@ final class TransactionEditViewModel: ObservableObject {
         } else {
             let account: BankAccount
             do {
-                account = try await bankAccountsProtocol.getBankAccount(userId: 1)
+                account = try await bankAccountsProtocol.getBankAccount()
             } catch {
                 onError(error, "TransactionEditViewModel.saveTransaction", "Не удалось загрузить банковский счет")
                 return
