@@ -11,7 +11,6 @@ struct CategoryView: View {
     @StateObject private var viewModel: CategoryViewModel
     @StateObject private var errorHandler = ErrorHandler()
 
-    @State private var searchText = ""
     @State private var showCreateCategory = false
 
     init() {
@@ -62,7 +61,7 @@ struct CategoryView: View {
                 }
             }
             .navigationTitle("Категории")
-            .searchable(text: $searchText, prompt: "Поиск категорий")
+            .searchable(text: $viewModel.searchText, prompt: "Поиск категорий")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showCreateCategory = true }) {

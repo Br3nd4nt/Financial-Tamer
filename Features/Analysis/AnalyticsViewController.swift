@@ -85,7 +85,7 @@ final class AnalyticsViewController: UIViewController {
         categoriesTableView.pinLeft(to: view.safeAreaLayoutGuide.leadingAnchor)
         categoriesTableView.pinRight(to: view.safeAreaLayoutGuide.trailingAnchor)
         categoriesTableView.pinBottom(to: view.safeAreaLayoutGuide.bottomAnchor)
-        categoriesTableView.backgroundColor = .systemBackground
+        categoriesTableView.backgroundColor = .systemGroupedBackground
         categoriesTableView.dataSource = self
         categoriesTableView.delegate = self
         categoriesTableView.separatorStyle = .singleLine
@@ -145,8 +145,7 @@ extension AnalyticsViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        viewModel.categoryRows.count * 1000
-//        viewModel.categoryRows.count
+        viewModel.categoryRows.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
