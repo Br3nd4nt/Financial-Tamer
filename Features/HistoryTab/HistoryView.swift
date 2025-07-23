@@ -202,6 +202,13 @@ struct HistoryView: View {
         .onAppear {
             viewModel.errorHandler = errorHandler
         }
+        .onChange(of: selectedTransaction) { newValue in
+            if newValue == nil {
+                Task {
+                    await viewModel.loadTransactions()
+                }
+            }
+        }
     }
 
     private enum Constants {
