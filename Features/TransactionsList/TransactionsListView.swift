@@ -14,6 +14,7 @@ struct TransactionsListView: View {
     @State private var showHistoryView = false
     @State private var selectedTransaction: TransactionFull?
     @State private var showCreateTransaction = false
+    @State private var showClearBackupAlert = false
 
     private let direction: Direction
 
@@ -156,9 +157,6 @@ struct TransactionsListView: View {
                     }
                 }
             )
-            .task {
-                await viewModel.loadTransactions()
-            }
             .refreshable {
                 // Does not refresh for some reason
                 // It detects two gestures and they cancel each other?..
@@ -168,6 +166,7 @@ struct TransactionsListView: View {
         }
         .onAppear {
             viewModel.errorHandler = errorHandler
+            Task { await viewModel.loadTransactions() }
         }
     }
 

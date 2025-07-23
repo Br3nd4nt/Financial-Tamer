@@ -23,6 +23,7 @@ final class TransactionEditViewModel: ObservableObject {
     private let transactionsProtocol: TransactionsProtocol
     var onError: (Error, String, String?) -> Void
     private let direction: Direction?
+    private var isSaving = false
 
     var canSave: Bool {
         category != nil && amount > 0
@@ -88,6 +89,9 @@ final class TransactionEditViewModel: ObservableObject {
     }
 
     func saveTransaction() async {
+        guard !isSaving else { return }
+        isSaving = true
+        defer { isSaving = false }
         guard let category, amount > 0 else {
             return
         }

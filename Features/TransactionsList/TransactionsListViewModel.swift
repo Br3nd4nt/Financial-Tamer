@@ -132,7 +132,7 @@ final class TransactionsListViewModel: ObservableObject {
                 categories.first
             }
 
-        let rows = rawTransactions.compactMap { transaction -> TransactionFull? in
+        let rows: [TransactionFull] = rawTransactions.compactMap { transaction in
             guard let category = categoryDict[transaction.categoryId] else {
                 print("Missing category for transaction: \(transaction.id)")
                 return nil
@@ -147,7 +147,7 @@ final class TransactionsListViewModel: ObservableObject {
             return TransactionFull(transaction: transaction, account: account, category: category)
         }
 
-        self.transactionRows = rows
+        self.transactionRows = rows // Always replace, never append
         isLoading = false
     }
 

@@ -10,3 +10,11 @@ struct TransactionDTO: Codable {
     let createdAt: String
     let updatedAt: String
 }
+
+struct CreateTransactionDTO: Codable {
+    let accountId: Int
+    let categoryId: Int
+    let amount: String
+    let transactionDate: Date
+    let comment: String
+}

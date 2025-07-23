@@ -20,66 +20,23 @@ final class TransactionsService: TransactionsProtocol {
 
     func getTransactionsInTimeFrame(accountId: Int, startDate: Date, endDate: Date) async throws -> [Transaction] {
         print("Starting getTransactionsInTimeFrame for account \(accountId)")
-        do {
-            do {
-                print("Starting backup sync...")
-                try await syncBackupTransactions()
-                print("Backup sync completed successfully")
-            } catch {
-                print("Backup sync failed, continuing with main request: \(error)")
-            }
+        // Removed backup sync on every load
+        print("Making network request...")
+        let endpoint = TransactionsEndpoint.getTransactionsInTimeFrame(
+            accountId: accountId,
+            startDate: startDate,
+            endDate: endDate
+        )
+        let dtos: [TransactionDTO] = try await networkClient.request(endpoint)
+        print("Network request completed successfully, got \(dtos.count) transactions")
+        let transactions = ModelMapper.map(dtos)
 
-            print("Making network request...")
-            let endpoint = TransactionsEndpoint.getTransactionsInTimeFrame(
-                accountId: accountId,
-                startDate: startDate,
-                endDate: endDate
-            )
-            let dtos: [TransactionDTO] = try await networkClient.request(endpoint)
-            print("Network request completed successfully, got \(dtos.count) transactions")
-            let transactions = ModelMapper.map(dtos)
-
-            for transaction in transactions {
-                try await localStorage.create(transaction)
-            }
-
-            NetworkMonitor.shared.setOfflineMode(false)
-            return transactions
-        } catch {
-            print("TransactionsService.getTransactionsInTimeFrame failed: \(error)")
-
-            if let urlError = error as? URLError {
-                switch urlError.code {
-                case .cancelled:
-                    print("Request was cancelled, retrying...")
-                    throw error
-                case .notConnectedToInternet, .networkConnectionLost, .cannotConnectToHost:
-                    print("Setting offline mode due to network connectivity error: \(urlError.code)")
-                    NetworkMonitor.shared.setOfflineMode(true)
-                default:
-                    print("URL error with code: \(urlError.code)")
-                    NetworkMonitor.shared.setOfflineMode(false)
-                }
-            } else if let networkError = error as? NetworkError {
-                switch networkError {
-                case .invalidRequest, .invalidResponse, .noData, .decodingError:
-                    print("Setting offline mode due to network error: \(networkError)")
-                    NetworkMonitor.shared.setOfflineMode(true)
-                case .httpError(let statusCode, _, _):
-                    print("HTTP error with status code: \(statusCode)")
-                    if statusCode >= 500 {
-                        NetworkMonitor.shared.setOfflineMode(true)
-                    } else {
-                        NetworkMonitor.shared.setOfflineMode(false)
-                    }
-                }
-            } else {
-                print("Setting offline mode due to unknown error: \(error)")
-                NetworkMonitor.shared.setOfflineMode(true)
-            }
-
-            return try await getLocalTransactions(accountId: accountId, startDate: startDate, endDate: endDate)
+        for transaction in transactions {
+            try await localStorage.create(transaction)
         }
+
+        NetworkMonitor.shared.setOfflineMode(false)
+        return transactions
     }
 
     private func getLocalTransactions(accountId: Int, startDate: Date, endDate: Date) async throws -> [Transaction] {
@@ -112,12 +69,24 @@ final class TransactionsService: TransactionsProtocol {
 
     func createTransaction(transaction: Transaction) async throws -> Transaction {
         do {
+            let dto = ModelMapper.mapToCreateDTO(transaction)
+            print("[DEBUG] Creating transaction DTO: \(dto)")
+            let encoder = JSONEncoder()
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.timeZone = TimeZone(secondsFromGMT: 0)
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+            encoder.dateEncodingStrategy = .formatted(formatter)
+            let jsonData = try encoder.encode(dto)
+            if let jsonString = String(data: jsonData, encoding: .utf8) {
+                print("[DEBUG] JSON body: \(jsonString)")
+            } else {
+                print("[DEBUG] Failed to encode CreateTransactionDTO to JSON")
+            }
             let endpoint = TransactionsEndpoint.createTransaction(transaction: transaction)
-            let createdTransaction: Transaction = try await networkClient.request(endpoint, body: transaction)
-
+            let createdTransaction: Transaction = try await networkClient.request(endpoint, body: jsonData)
             try await localStorage.create(createdTransaction)
             try await backupStorage.removeFromBackup(transaction.id)
-
             NetworkMonitor.shared.setOfflineMode(false)
             return createdTransaction
         } catch {
@@ -171,7 +140,15 @@ final class TransactionsService: TransactionsProtocol {
                 switch action {
                 case .create:
                     let endpoint = TransactionsEndpoint.createTransaction(transaction: transaction)
-                    let createdTransaction: Transaction = try await networkClient.request(endpoint, body: transaction)
+                    let dto = ModelMapper.mapToCreateDTO(transaction)
+                    let encoder = JSONEncoder()
+                    let formatter = DateFormatter()
+                    formatter.locale = Locale(identifier: "en_US_POSIX")
+                    formatter.timeZone = TimeZone(secondsFromGMT: 0)
+                    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+                    encoder.dateEncodingStrategy = .formatted(formatter)
+                    let jsonData = try encoder.encode(dto)
+                    let createdTransaction: Transaction = try await networkClient.request(endpoint, body: jsonData)
                     try await localStorage.create(createdTransaction)
                     try await backupStorage.removeFromBackup(transaction.id)
 

@@ -91,4 +91,15 @@ struct ModelMapper {
     static func map(_ dtos: [TransactionDTO]) -> [Transaction] {
         dtos.map { map($0) }
     }
+
+    static func mapToCreateDTO(_ transaction: Transaction) -> CreateTransactionDTO {
+        let amountString = String(format: "%.2f", NSDecimalNumber(decimal: transaction.amount).doubleValue)
+        return CreateTransactionDTO(
+            accountId: transaction.accountId,
+            categoryId: transaction.categoryId,
+            amount: amountString,
+            transactionDate: transaction.transactionDate,
+            comment: transaction.comment
+        )
+    }
 }
