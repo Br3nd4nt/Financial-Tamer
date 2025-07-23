@@ -239,6 +239,3 @@ private enum TransactionsEndpoint: Endpoint {
         }
     }
 }
-
-// MARK: - Response Types
-private struct EmptyResponse: Decodable {}

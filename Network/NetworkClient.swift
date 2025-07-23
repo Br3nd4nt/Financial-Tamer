@@ -49,6 +49,10 @@ final class NetworkClient: NetworkClientProtocol {
         }
 
         guard !data.isEmpty else {
+            if T.self == EmptyResponse.self {
+                // Return an empty instance for EmptyResponse
+                return EmptyResponse() as! T
+            }
             throw NetworkError.noData
         }
 
@@ -108,6 +112,10 @@ final class NetworkClient: NetworkClientProtocol {
         }
 
         guard !data.isEmpty else {
+            if T.self == EmptyResponse.self {
+                // Return an empty instance for EmptyResponse
+                return EmptyResponse() as! T
+            }
             throw NetworkError.noData
         }
 
