@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0663DCA62E30CE5B009184D4 /* Config.template.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0663DCA52E30CE5B009184D4 /* Config.template.swift */; };
-		06FAFA912E2B092300CDC969 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06FAFA902E2B092300CDC969 /* Config.swift */; };
+		0663DD772E30F51F009184D4 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0663DD762E30F51F009184D4 /* Config.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -23,9 +23,9 @@
 
 /* Begin PBXFileReference section */
 		0663DCA52E30CE5B009184D4 /* Config.template.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.template.swift; sourceTree = "<group>"; };
+		0663DD762E30F51F009184D4 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		068636102DF74110001F2E7F /* Financial Tamer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Financial Tamer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		068636242DF7413F001F2E7F /* Unit Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unit Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		06FAFA902E2B092300CDC969 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -106,7 +106,7 @@
 			isa = PBXGroup;
 			children = (
 				06FAFAA32E2B0CC700CDC969 /* Network */,
-				06FAFA902E2B092300CDC969 /* Config.swift */,
+				0663DD762E30F51F009184D4 /* Config.swift */,
 				06B2C44D2E054EB90080370B /* Features */,
 				0686362D2DF74167001F2E7F /* Models */,
 				068636122DF74110001F2E7F /* App */,
@@ -268,7 +268,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				06FAFA912E2B092300CDC969 /* Config.swift in Sources */,
+				0663DD772E30F51F009184D4 /* Config.swift in Sources */,
 				0663DCA62E30CE5B009184D4 /* Config.template.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
