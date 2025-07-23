@@ -98,12 +98,14 @@ final class TransactionsService: TransactionsProtocol {
 
     func updateTransaction(transaction: Transaction) async throws -> Transaction {
         do {
+            let dto = ModelMapper.mapToUpdateDTO(transaction)
+            let encoder = JSONEncoder()
+            let jsonData = try encoder.encode(dto)
             let endpoint = TransactionsEndpoint.updateTransaction(transaction: transaction)
-            let updatedTransaction: Transaction = try await networkClient.request(endpoint, body: transaction)
-
+            let updatedTransactionDTO: TransactionDTO = try await networkClient.request(endpoint, body: jsonData)
+            let updatedTransaction = ModelMapper.map(updatedTransactionDTO)
             try await localStorage.update(updatedTransaction)
             try await backupStorage.removeFromBackup(transaction.id)
-
             NetworkMonitor.shared.setOfflineMode(false)
             return updatedTransaction
         } catch {

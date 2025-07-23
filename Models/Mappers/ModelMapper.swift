@@ -119,4 +119,20 @@ struct ModelMapper {
             updatedAt: updatedAt
         )
     }
+
+    static func mapToUpdateDTO(_ transaction: Transaction) -> UpdateTransactionDTO {
+        let amountString = String(format: "%.2f", NSDecimalNumber(decimal: transaction.amount).doubleValue)
+        let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return UpdateTransactionDTO(
+            id: transaction.id,
+            accountId: transaction.accountId,
+            categoryId: transaction.categoryId,
+            amount: amountString,
+            transactionDate: isoFormatter.string(from: transaction.transactionDate),
+            comment: transaction.comment,
+            createdAt: isoFormatter.string(from: transaction.createdAt),
+            updatedAt: isoFormatter.string(from: transaction.updatedAt)
+        )
+    }
 }

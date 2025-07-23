@@ -62,6 +62,9 @@ final class TransactionsListViewModel: ObservableObject {
         self.categoriesProtocol = categoriesProtocol
         self.bankAccountsProtocol = bankAccountsProtocol
         self.errorHandler = errorHandler
+        NotificationCenter.default.addObserver(forName: .accountBalanceUpdatedNotification, object: nil, queue: .main) { [weak self] _ in
+            Task { await self?.loadTransactions() }
+        }
     }
 
     func loadTransactions() async {
