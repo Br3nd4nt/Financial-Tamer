@@ -8,6 +8,21 @@
 import UIKit
 
 final class AnalyticsViewController: UIViewController {
+    private enum Constants {
+        static let backgroundColor = UIColor.systemGroupedBackground
+        static let tableTitle = "Категории"
+        static let tableTitleColor = UIColor.secondaryLabel
+        static let tableTitleTopPadding: Double = 10
+        static let tableTitleLeftPadding: Double = 10
+        static let tableTitleRightPadding: Double = 10
+        static let tableTitleBottomPadding: Double = 0
+        static let minHeaderHeight: Double = 120
+        static let headerBottomPadding: Double = 10
+        static let separatorStyle: UITableViewCell.SeparatorStyle = .singleLine
+        static let allowsSelection = false
+        static let isScrollEnabled = true
+        static let numberOfSections = 1
+    }
     private let headerView = AnalyticsHeaderView()
     private let tableTitleLabel = UILabel()
     private let categoriesTableView = UITableView(frame: .zero)
@@ -16,8 +31,8 @@ final class AnalyticsViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemGroupedBackground
-        navigationController?.navigationBar.backgroundColor = .systemGroupedBackground
+        view.backgroundColor = Constants.backgroundColor
+        navigationController?.navigationBar.backgroundColor = Constants.backgroundColor
         makeTable()
     }
 
@@ -52,7 +67,14 @@ final class AnalyticsViewController: UIViewController {
     }
 
     private func makeTable() {
-        let initialWidth = view.bounds.width > 0 ? view.bounds.width : UIScreen.main.bounds.width
+        let initialWidth = view.bounds.width > 0 ? Double(view.bounds.width) : Double(UIScreen.main.bounds.width)
+        let headerContainer = setupHeaderContainer(initialWidth: initialWidth)
+        setupHeaderViewTargets(headerContainer: headerContainer)
+        setupTableTitleLabel(headerContainer: headerContainer)
+        setupCategoriesTableView(headerContainer: headerContainer)
+    }
+
+    private func setupHeaderContainer(initialWidth: Double) -> UIView {
         let headerContainer = UIView(frame: CGRect(x: 0, y: 0, width: initialWidth, height: 1))
         headerContainer.backgroundColor = .clear
         headerContainer.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -64,20 +86,26 @@ final class AnalyticsViewController: UIViewController {
         headerView.pinTop(to: headerContainer)
         headerView.pinLeft(to: headerContainer)
         headerView.pinRight(to: headerContainer)
+        return headerContainer
+    }
 
-        tableTitleLabel.text = "Категории"
-        tableTitleLabel.textColor = .secondaryLabel
+    private func setupTableTitleLabel(headerContainer: UIView) {
+        tableTitleLabel.text = Constants.tableTitle
+        tableTitleLabel.textColor = Constants.tableTitleColor
         headerContainer.addSubview(tableTitleLabel)
         tableTitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        tableTitleLabel.pinTop(to: headerView.bottomAnchor, 10)
-        tableTitleLabel.pinLeft(to: headerContainer, 10)
-        tableTitleLabel.pinRight(to: headerContainer, 10)
-        tableTitleLabel.pinBottom(to: headerContainer, 0)
+        tableTitleLabel.pinTop(to: headerView.bottomAnchor, Constants.tableTitleTopPadding)
+        tableTitleLabel.pinLeft(to: headerContainer, Constants.tableTitleLeftPadding)
+        tableTitleLabel.pinRight(to: headerContainer, Constants.tableTitleRightPadding)
+        tableTitleLabel.pinBottom(to: headerContainer, Constants.tableTitleBottomPadding)
 
-        let headerHeight = headerView.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height + 10 + tableTitleLabel.intrinsicContentSize.height
-        let minHeaderHeight: Double = 120
-        headerContainer.frame = CGRect(x: 0, y: 0, width: initialWidth, height: max(headerHeight, minHeaderHeight))
+        let headerHeight = headerView.systemLayoutSizeFitting(
+            UIView.layoutFittingCompressedSize
+        ).height + Constants.headerBottomPadding + tableTitleLabel.intrinsicContentSize.height
+        headerContainer.frame = CGRect(x: 0, y: 0, width: headerContainer.frame.width, height: max(headerHeight, Constants.minHeaderHeight))
+    }
 
+    private func setupCategoriesTableView(headerContainer: UIView) {
         categoriesTableView.tableHeaderView = headerContainer
         categoriesTableView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(categoriesTableView)
@@ -85,14 +113,16 @@ final class AnalyticsViewController: UIViewController {
         categoriesTableView.pinLeft(to: view.safeAreaLayoutGuide.leadingAnchor)
         categoriesTableView.pinRight(to: view.safeAreaLayoutGuide.trailingAnchor)
         categoriesTableView.pinBottom(to: view.safeAreaLayoutGuide.bottomAnchor)
-        categoriesTableView.backgroundColor = .systemBackground
+        categoriesTableView.backgroundColor = Constants.backgroundColor
         categoriesTableView.dataSource = self
         categoriesTableView.delegate = self
-        categoriesTableView.separatorStyle = .singleLine
-        categoriesTableView.isScrollEnabled = true
-        categoriesTableView.allowsSelection = false
+        categoriesTableView.separatorStyle = Constants.separatorStyle
+        categoriesTableView.isScrollEnabled = Constants.isScrollEnabled
+        categoriesTableView.allowsSelection = Constants.allowsSelection
         categoriesTableView.register(AnalyticsCategoryCell.self, forCellReuseIdentifier: AnalyticsCategoryCell.reuseId)
+    }
 
+    private func setupHeaderViewTargets(headerContainer: UIView) {
         guard let startDatePicker = headerView.startDatePicker else {
             return
         }
@@ -107,7 +137,8 @@ final class AnalyticsViewController: UIViewController {
     private func reloadData() {
         print("categoryRows count:", viewModel.categoryRows.count)
         categoriesTableView.reloadData()
-        headerView.changeTotal(viewModel.total)
+        let currencySymbol = viewModel.currencySymbol
+        headerView.changeTotal(viewModel.total, currencySymbol: currencySymbol)
         updateTableHeaderLayout()
     }
 
@@ -135,18 +166,17 @@ final class AnalyticsViewController: UIViewController {
         super.viewDidLayoutSubviews()
         updateTableHeaderLayout()
     }
+
+    // MARK: - UITableViewDelegate
 }
 
-extension AnalyticsViewController: UITableViewDelegate {}
-
-extension AnalyticsViewController: UITableViewDataSource {
+extension AnalyticsViewController: UITableViewDelegate, UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        1
+        Constants.numberOfSections
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        viewModel.categoryRows.count * 1000
-//        viewModel.categoryRows.count
+        viewModel.categoryRows.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -155,7 +185,8 @@ extension AnalyticsViewController: UITableViewDataSource {
             return UITableViewCell()
         }
         // остаток от деления только ради тестирования скролла со множеством элементов
-        cell.configure(with: viewModel.categoryRows[indexPath.row % viewModel.categoryRows.count])
+        let currencySymbol = viewModel.currencySymbol
+        cell.configure(with: viewModel.categoryRows[indexPath.row % viewModel.categoryRows.count], currencySymbol: currencySymbol)
         return cell
     }
 }

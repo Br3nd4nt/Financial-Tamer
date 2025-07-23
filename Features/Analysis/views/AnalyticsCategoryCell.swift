@@ -8,6 +8,13 @@
 import UIKit
 
 final class AnalyticsCategoryCell: UITableViewCell {
+    private enum Constants {
+        static let reuseId = "AnalyticsCategoryCell"
+        static let verticalPadding: Double = 10
+        static let horizontalPadding: Double = 10
+        static let percentMultiplier: Decimal = 100
+        static let percentFormat = "%d%%"
+    }
     private let wrap = UIView()
     private let categoryEmojiLabel = UILabel()
     private let categoryNameLabel = UILabel()
@@ -16,7 +23,7 @@ final class AnalyticsCategoryCell: UITableViewCell {
     private let categoryPercentageLabel = UILabel()
     private let categoryAmountLabel = UILabel()
 
-    static let reuseId = "AnalyticsCategoryCell"
+    static let reuseId = Constants.reuseId
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -31,8 +38,8 @@ final class AnalyticsCategoryCell: UITableViewCell {
 
     private func configureUI() {
         addSubview(wrap)
-        wrap.pinVertical(to: self, 10)
-        wrap.pinHorizontal(to: self, 10)
+        wrap.pinVertical(to: self, Constants.verticalPadding)
+        wrap.pinHorizontal(to: self, Constants.horizontalPadding)
 
         let firstStack = UIStackView(arrangedSubviews: [categoryNameLabel, categoryDescriptionLabel])
         firstStack.axis = .vertical
@@ -53,12 +60,12 @@ final class AnalyticsCategoryCell: UITableViewCell {
         stack.pinRight(to: wrap)
     }
 
-    func configure(with category: CategoryAnalytics) {
+    func configure(with category: CategoryAnalytics, currencySymbol: String) {
         categoryEmojiLabel.text = "\(category.emoji)"
         categoryNameLabel.text = category.name
         categoryDescriptionLabel.text = category.description
-        let value = (category.percentage * Decimal(100)).doubleValue
-        categoryPercentageLabel.text = "\(Int(value.rounded(.toNearestOrAwayFromZero)))%"
-        categoryAmountLabel.text = category.totalValue.formattedWithSeparator()
+        let value = (category.percentage * Constants.percentMultiplier).doubleValue
+        categoryPercentageLabel.text = String(format: Constants.percentFormat, Int(value.rounded(.toNearestOrAwayFromZero)))
+        categoryAmountLabel.text = category.totalValue.formattedWithSeparator(currencySymbol: currencySymbol)
     }
 }

@@ -31,7 +31,7 @@ final class BalanceViewModel: ObservableObject {
         isLoading = true
 
         do {
-            let loadedAccount = try await bankAccountsService.getBankAccount(userId: 1)
+            let loadedAccount = try await bankAccountsService.getBankAccount()
             self.account = loadedAccount
             self.userId = loadedAccount.userId
         } catch {

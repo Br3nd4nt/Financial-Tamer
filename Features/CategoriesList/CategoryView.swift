@@ -11,73 +11,69 @@ struct CategoryView: View {
     @StateObject private var viewModel: CategoryViewModel
     @StateObject private var errorHandler = ErrorHandler()
 
-    @State private var searchText = ""
     @State private var showCreateCategory = false
 
     init() {
         _viewModel = StateObject(wrappedValue: CategoryViewModel(errorHandler: ErrorHandler()))
     }
 
+    private var loadingView: some View {
+        VStack(spacing: Constants.loadingVStackSpacing) {
+            ProgressView()
+                .scaleEffect(Constants.progressScale)
+                .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+            Text(Constants.loadingText)
+                .font(.body)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(.systemGroupedBackground))
+    }
+    private var emptyView: some View {
+        VStack(spacing: Constants.emptyVStackSpacing) {
+            Image(systemName: Constants.emptyIcon)
+                .font(.system(size: Constants.emptyIconSize))
+                .foregroundColor(.secondary)
+            Text(Constants.noCategoriesText)
+                .font(.title2)
+                .fontWeight(.medium)
+                .foregroundColor(.primary)
+            Text(Constants.emptyDescription)
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(.systemGroupedBackground))
+    }
+    private var mainList: some View {
+        List {
+            ForEach(viewModel.filteredCategories) { category in
+                CategoryRow(category: category)
+            }
+        }
+        .listStyle(.insetGrouped)
+    }
+
     var body: some View {
         NavigationStack {
             Group {
                 if viewModel.isLoading {
-                    VStack(spacing: 16) {
-                        ProgressView()
-                            .scaleEffect(1.5)
-                            .progressViewStyle(CircularProgressViewStyle(tint: .blue))
-
-                        Text("Загрузка категорий...")
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color(.systemGroupedBackground))
+                    loadingView
                 } else if viewModel.filteredCategories.isEmpty {
-                    VStack(spacing: 16) {
-                        Image(systemName: "folder")
-                            .font(.system(size: 48))
-                            .foregroundColor(.secondary)
-
-                        Text("Нет категорий")
-                            .font(.title2)
-                            .fontWeight(.medium)
-                            .foregroundColor(.primary)
-
-                        Text("Здесь будут отображаться ваши категории для доходов и расходов")
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color(.systemGroupedBackground))
+                    emptyView
                 } else {
-                    List {
-                        ForEach(viewModel.filteredCategories) { category in
-                            CategoryRow(category: category)
-                        }
-                    }
-                    .listStyle(.insetGrouped)
+                    mainList
                 }
             }
-            .navigationTitle("Категории")
-            .searchable(text: $searchText, prompt: "Поиск категорий")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showCreateCategory = true }) {
-                        Image(systemName: "plus")
-                    }
-                }
-            }
+            .navigationTitle(Constants.navigationTitle)
+            .searchable(text: $viewModel.searchText, prompt: Constants.searchPrompt)
             .task {
                 await viewModel.loadCategories()
             }
             .refreshable {
                 await viewModel.loadCategories()
-            }
-            .sheet(isPresented: $showCreateCategory) {
-                CreateCategoryView()
             }
             .errorAlert(errorHandler: errorHandler)
         }
@@ -85,42 +81,23 @@ struct CategoryView: View {
             viewModel.errorHandler = errorHandler
         }
     }
-}
 
-struct CreateCategoryView: View {
-    @Environment(\.dismiss) private var dismiss
-    @State private var name = ""
-    @State private var emoji = "📁"
-
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    TextField("Название", text: $name)
-                    TextField("Эмодзи", text: $emoji)
-                }
-            }
-            .navigationTitle("Новая категория")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Отмена") {
-                        dismiss()
-                    }
-                }
-
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Сохранить") {
-                        // TODO: Implement category creation
-                        dismiss()
-                    }
-                    .disabled(name.isEmpty)
-                }
-            }
-        }
+    private enum Constants {
+        static let loadingVStackSpacing: Double = 16
+        static let progressScale = 1.5
+        static let loadingText = "Загрузка категорий..."
+        static let emptyVStackSpacing: Double = 16
+        static let emptyIcon = "folder"
+        static let emptyIconSize: Double = 48
+        static let noCategoriesText = "Нет категорий"
+        static let emptyDescription = "Здесь будут отображаться ваши категории для доходов и расходов"
+        static let plusIcon = "plus"
+        static let navigationTitle = "Категории"
+        static let searchPrompt = "Поиск категорий"
+        static let newCategoryTitle = "Новая категория"
+        static let cancel = "Отмена"
+        static let save = "Сохранить"
+        static let namePlaceholder = "Название"
+        static let emojiPlaceholder = "Эмодзи"
     }
-}
-
-#Preview {
-    CategoryView()
 }

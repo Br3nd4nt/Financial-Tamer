@@ -85,7 +85,7 @@ final class AnalyticsViewModel: ObservableObject {
         }
 
         do {
-            let loadedAccount = try await bankAccountsProtocol.getBankAccount(userId: 1)
+            let loadedAccount = try await bankAccountsProtocol.getBankAccount()
             self.account = loadedAccount
         } catch {
             onError(error, "AnalyticsViewModel.loadTransactions", "Не удалось загрузить банковский счет")
@@ -192,4 +192,9 @@ final class AnalyticsViewModel: ObservableObject {
             return lhs.percentage > rhs.percentage
         }
     }
+}
+
+extension AnalyticsViewModel {
+    var accountPublic: BankAccount? { account }
+    var currencySymbol: String { account?.currency.symbol ?? "₽" }
 }

@@ -151,11 +151,10 @@ final class TransactionsServiceMock: TransactionsProtocol {
         mockTransactions.filter { $0.accountId == accountId && $0.transactionDate >= startDate && $0.transactionDate <= endDate }
     }
 
-    func createTransaction(transaction: Transaction) async throws -> Transaction {
+    func createTransaction(transaction: Transaction, account: BankAccount, category: Category) async throws -> Transaction {
         guard !mockTransactions.contains(where: { $0.id == transaction.id }) else {
             throw TransactionServiceError.dublicatedTransaction
         }
-
         mockTransactions.append(transaction)
         return transaction
     }

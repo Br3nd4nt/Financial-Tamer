@@ -23,6 +23,7 @@ final class TransactionEditViewModel: ObservableObject {
     private let transactionsProtocol: TransactionsProtocol
     var onError: (Error, String, String?) -> Void
     private let direction: Direction?
+    private var isSaving = false
 
     var canSave: Bool {
         category != nil && amount > 0
@@ -88,6 +89,11 @@ final class TransactionEditViewModel: ObservableObject {
     }
 
     func saveTransaction() async {
+        guard !isSaving else {
+            return
+        }
+        isSaving = true
+        defer { isSaving = false }
         guard let category, amount > 0 else {
             return
         }
@@ -100,7 +106,7 @@ final class TransactionEditViewModel: ObservableObject {
 
             let account: BankAccount
             do {
-                account = try await bankAccountsProtocol.getBankAccount(userId: 1)
+                account = try await bankAccountsProtocol.getBankAccount()
             } catch {
                 onError(error, "TransactionEditViewModel.saveTransaction", "Не удалось загрузить банковский счет")
                 return
@@ -127,7 +133,7 @@ final class TransactionEditViewModel: ObservableObject {
         } else {
             let account: BankAccount
             do {
-                account = try await bankAccountsProtocol.getBankAccount(userId: 1)
+                account = try await bankAccountsProtocol.getBankAccount()
             } catch {
                 onError(error, "TransactionEditViewModel.saveTransaction", "Не удалось загрузить банковский счет")
                 return
@@ -145,7 +151,7 @@ final class TransactionEditViewModel: ObservableObject {
             )
 
             do {
-                _ = try await transactionsProtocol.createTransaction(transaction: newTransaction)
+                _ = try await transactionsProtocol.createTransaction(transaction: newTransaction, account: account, category: category)
                 NotificationCenter.default.post(name: .accountBalanceUpdatedNotification, object: nil)
             } catch {
                 onError(error, "TransactionEditViewModel.saveTransaction", "Не удалось создать транзакцию")

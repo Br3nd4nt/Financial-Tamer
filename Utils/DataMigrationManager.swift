@@ -8,7 +8,9 @@ final class DataMigrationManager {
     func migrateDataIfNeeded() async {
         let settings = StorageSettings.shared
 
-        guard settings.hasStorageMethodChanged else { return }
+        guard settings.hasStorageMethodChanged else {
+            return
+        }
 
         do {
             try await performMigration(from: settings.lastStorageMethod ?? .swiftData, to: settings.currentStorageMethod)

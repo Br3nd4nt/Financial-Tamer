@@ -6,6 +6,6 @@
 //
 
 protocol BankAccountsProtocol {
-    func getBankAccount(userId: Int) async throws -> BankAccount
+    func getBankAccount() async throws -> BankAccount
     func updateBankAccount(userId: Int, newAccount: BankAccount) async throws -> BankAccount
 }

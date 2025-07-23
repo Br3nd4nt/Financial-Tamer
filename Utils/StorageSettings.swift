@@ -35,7 +35,11 @@ final class StorageSettings {
 
     var lastStorageMethod: StorageMethod? {
         get {
-            guard let rawValue = userDefaults.string(forKey: lastStorageMethodKey) else { return nil }
+            guard let rawValue = userDefaults.string(
+                forKey: lastStorageMethodKey
+            ) else {
+                return nil
+            }
             return StorageMethod(rawValue: rawValue)
         }
         set {
@@ -48,7 +52,9 @@ final class StorageSettings {
     }
 
     var hasStorageMethodChanged: Bool {
-        guard let lastMethod = lastStorageMethod else { return false }
+        guard let lastMethod = lastStorageMethod else {
+            return false
+        }
         return currentStorageMethod != lastMethod
     }
 

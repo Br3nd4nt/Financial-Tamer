@@ -8,7 +8,7 @@
 import Foundation
 
 final class RequestBuilder: RequestBuilderProtocol {
-    func buildRequest<T: Encodable>(from endpoint: Endpoint, body: T?) async -> URLRequest? {
+    func buildRequest<T>(from endpoint: Endpoint, body: T?) async -> URLRequest? {
         var url = endpoint.baseURL.appendingPathComponent(endpoint.path)
 
         if endpoint.method == .get && !endpoint.parameters.isEmpty {
@@ -31,15 +31,19 @@ final class RequestBuilder: RequestBuilderProtocol {
         }
 
         if let body, endpoint.method != .get {
-            do {
-                let encodedData = try await Task.detached(priority: .userInitiated) {
-                    try JSONEncoder().encode(body)
-                }.value
-
-                request.httpBody = encodedData
+            if let dataBody = body as? Data {
+                request.httpBody = dataBody
                 request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-            } catch {
-                return nil
+            } else if let encodableBody = body as? Encodable {
+                do {
+                    let encodedData = try await Task.detached(priority: .userInitiated) {
+                        try JSONEncoder().encode(encodableBody)
+                    }.value
+                    request.httpBody = encodedData
+                    request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+                } catch {
+                    return nil
+                }
             }
         }
 

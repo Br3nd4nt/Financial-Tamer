@@ -50,6 +50,8 @@ final class TransactionsListViewModel: ObservableObject {
         }
     }
 
+    private var accountBalanceObserver: NSObjectProtocol?
+
     init(
         direction: Direction,
         transactionsProtocol: TransactionsProtocol = ServiceFactory.shared.transactionsService,
@@ -62,6 +64,9 @@ final class TransactionsListViewModel: ObservableObject {
         self.categoriesProtocol = categoriesProtocol
         self.bankAccountsProtocol = bankAccountsProtocol
         self.errorHandler = errorHandler
+        accountBalanceObserver = NotificationCenter.default.addObserver(forName: .accountBalanceUpdatedNotification, object: nil, queue: .main) { [weak self] _ in
+            Task { await self?.loadTransactions() }
+        }
     }
 
     func loadTransactions() async {
@@ -87,7 +92,7 @@ final class TransactionsListViewModel: ObservableObject {
 
         do {
             print("Loading bank account...")
-            let loadedAccount = try await bankAccountsProtocol.getBankAccount(userId: 1)
+            let loadedAccount = try await bankAccountsProtocol.getBankAccount()
             self.account = loadedAccount
             print("Bank account loaded successfully: \(loadedAccount.id)")
         } catch {
@@ -132,7 +137,7 @@ final class TransactionsListViewModel: ObservableObject {
                 categories.first
             }
 
-        let rows = rawTransactions.compactMap { transaction -> TransactionFull? in
+        let rows: [TransactionFull] = rawTransactions.compactMap { transaction in
             guard let category = categoryDict[transaction.categoryId] else {
                 print("Missing category for transaction: \(transaction.id)")
                 return nil
@@ -147,7 +152,7 @@ final class TransactionsListViewModel: ObservableObject {
             return TransactionFull(transaction: transaction, account: account, category: category)
         }
 
-        self.transactionRows = rows
+        self.transactionRows = rows // Always replace, never append
         isLoading = false
     }
 
@@ -159,4 +164,14 @@ final class TransactionsListViewModel: ObservableObject {
             return lhs.amount > rhs.amount
         }
     }
+
+    deinit {
+        if let observer = accountBalanceObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+}
+
+extension TransactionsListViewModel {
+    var currencySymbol: String { account?.currency.symbol ?? "₽" }
 }

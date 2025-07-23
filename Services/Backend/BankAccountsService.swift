@@ -18,72 +18,6 @@ final class BankAccountsService: BankAccountsProtocol {
         self.backupStorage = backupStorage
     }
 
-    func getBankAccount(userId: Int) async throws -> BankAccount {
-        do {
-            try await syncBackupBankAccounts()
-
-            let endpoint = BankAccountsEndpoint.getBankAccount(userId: userId)
-            let dto: BankAccountDTO = try await networkClient.request(endpoint)
-            let bankAccount = ModelMapper.map(dto)
-
-            try await localStorage.create(bankAccount)
-            NetworkMonitor.shared.setOfflineMode(false)
-
-            return bankAccount
-        } catch {
-            print("BankAccountsService.getBankAccount failed: \(error)")
-            if let networkError = error as? NetworkError {
-                switch networkError {
-                case .invalidRequest, .invalidResponse, .noData, .decodingError:
-                    print("Setting offline mode due to network error: \(networkError)")
-                    NetworkMonitor.shared.setOfflineMode(true)
-                case .httpError(let statusCode, _, _):
-                    print("HTTP error with status code: \(statusCode)")
-                    if statusCode >= 500 {
-                        NetworkMonitor.shared.setOfflineMode(true)
-                    } else {
-                        NetworkMonitor.shared.setOfflineMode(false)
-                    }
-                }
-            } else if let urlError = error as? URLError, urlError.code == .cancelled {
-                print("Request was cancelled, retrying...")
-                throw error
-            } else {
-                print("Setting offline mode due to unknown error: \(error)")
-                NetworkMonitor.shared.setOfflineMode(true)
-            }
-            let localBankAccounts = try await localStorage.getAll()
-            let backupItems = try await backupStorage.getBackupItems()
-
-            var allBankAccounts = localBankAccounts
-
-            for (backupBankAccount, action) in backupItems {
-                switch action {
-                case .create:
-                    if !allBankAccounts.contains(where: { $0.id == backupBankAccount.id }) {
-                        allBankAccounts.append(backupBankAccount)
-                    }
-                case .update:
-                    if let index = allBankAccounts.firstIndex(where: { $0.id == backupBankAccount.id }) {
-                        allBankAccounts[index] = backupBankAccount
-                    }
-                case .delete:
-                    allBankAccounts.removeAll { $0.id == backupBankAccount.id }
-                }
-            }
-
-            return allBankAccounts.first { $0.userId == userId } ?? BankAccount(
-                id: 0,
-                userId: userId,
-                name: "Default Account",
-                balance: Decimal.zero,
-                currency: .dollar,
-                createdAt: Date(),
-                updatedAt: Date()
-            )
-        }
-    }
-
     func updateBankAccount(userId: Int, newAccount: BankAccount) async throws -> BankAccount {
         do {
             let endpoint = BankAccountsEndpoint.updateBankAccount(userId: userId, newAccount: newAccount)
@@ -122,6 +56,30 @@ final class BankAccountsService: BankAccountsProtocol {
         }
     }
 
+    func getBankAccount() async throws -> BankAccount {
+        do {
+            let endpoint = BankAccountsEndpoint.getAllBankAccounts
+            let dtos: [BankAccountDTO] = try await networkClient.request(endpoint)
+            let bankAccounts = ModelMapper.map(dtos)
+            guard let firstAccount = bankAccounts.first else {
+                throw NSError(domain: "BankAccountsService", code: 0, userInfo: [NSLocalizedDescriptionKey: "No bank accounts found"])
+            }
+            // Optionally update local storage
+            try await localStorage.clear()
+            try await localStorage.create(firstAccount)
+            NetworkMonitor.shared.setOfflineMode(false)
+            return firstAccount
+        } catch {
+            print("BankAccountsService.getBankAccount failed: \(error)")
+            NetworkMonitor.shared.setOfflineMode(true)
+            let localAccounts = try await localStorage.getAll()
+            guard let firstAccount = localAccounts.first else {
+                throw NSError(domain: "BankAccountsService", code: 0, userInfo: [NSLocalizedDescriptionKey: "No local bank accounts found"])
+            }
+            return firstAccount
+        }
+    }
+
     private func syncBackupBankAccounts() async throws {
         let backupItems = try await backupStorage.getBackupItems()
 
@@ -155,7 +113,7 @@ final class BankAccountsService: BankAccountsProtocol {
 
 // MARK: - Endpoints
 private enum BankAccountsEndpoint: Endpoint {
-    case getBankAccount(userId: Int)
+    case getAllBankAccounts
     case updateBankAccount(userId: Int, newAccount: BankAccount)
 
     var baseURL: URL {
@@ -164,8 +122,8 @@ private enum BankAccountsEndpoint: Endpoint {
 
     var path: String {
         switch self {
-        case .getBankAccount(let userId):
-            return "/accounts/\(userId)"
+        case .getAllBankAccounts:
+            return "/accounts"
         case .updateBankAccount(let userId, _):
             return "/accounts/\(userId)"
         }
@@ -173,7 +131,7 @@ private enum BankAccountsEndpoint: Endpoint {
 
     var method: HTTPMethod {
         switch self {
-        case .getBankAccount:
+        case .getAllBankAccounts:
             return .get
         case .updateBankAccount:
             return .put
