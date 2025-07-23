@@ -73,16 +73,16 @@ final class AnalyticsHeaderView: UIView {
         endDateRow.datePicker
     }
 
-    func changeTotal(_ total: Decimal) {
+    func changeTotal(_ total: Decimal, currencySymbol: String) {
         guard let label = totalRow.totalLabel else {
             return
         }
-        label.text = total.formattedWithSeparator(currencySymbol: "₽")
+        label.text = total.formattedWithSeparator(currencySymbol: currencySymbol)
     }
 }
 
 #Preview {
     let header = AnalyticsHeaderView()
-    header.changeTotal(1000)
+    header.changeTotal(1000, currencySymbol: "₽")
     return header
 }

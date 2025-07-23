@@ -135,3 +135,8 @@ final class HistoryViewModel: ObservableObject {
         }
     }
 }
+
+extension HistoryViewModel {
+    var accountPublic: BankAccount? { self.account }
+    var currencySymbol: String { account?.currency.symbol ?? "₽" }
+}

@@ -106,7 +106,7 @@ struct HistoryView: View {
                     HStack {
                         Text(Constants.totalTitle)
                         Spacer()
-                        Text(viewModel.total.formattedWithSeparator(currencySymbol: Constants.currencySymbol))
+                        Text(viewModel.total.formattedWithSeparator(currencySymbol: viewModel.currencySymbol))
                     }
                 }
                 Section(Constants.operationsTitle) {

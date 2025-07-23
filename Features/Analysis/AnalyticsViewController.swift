@@ -107,7 +107,8 @@ final class AnalyticsViewController: UIViewController {
     private func reloadData() {
         print("categoryRows count:", viewModel.categoryRows.count)
         categoriesTableView.reloadData()
-        headerView.changeTotal(viewModel.total)
+        let currencySymbol = viewModel.currencySymbol
+        headerView.changeTotal(viewModel.total, currencySymbol: currencySymbol)
         updateTableHeaderLayout()
     }
 
@@ -154,7 +155,8 @@ extension AnalyticsViewController: UITableViewDataSource {
             return UITableViewCell()
         }
         // остаток от деления только ради тестирования скролла со множеством элементов
-        cell.configure(with: viewModel.categoryRows[indexPath.row % viewModel.categoryRows.count])
+        let currencySymbol = viewModel.currencySymbol
+        cell.configure(with: viewModel.categoryRows[indexPath.row % viewModel.categoryRows.count], currencySymbol: currencySymbol)
         return cell
     }
 }

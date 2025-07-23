@@ -35,7 +35,7 @@ struct TransactionRow: View {
                 }
             }
             Spacer()
-            Text(fullTransaction.amount.formattedWithSeparator(currencySymbol: Constants.currencySymbol))
+            Text(fullTransaction.amount.formattedWithSeparator(currencySymbol: fullTransaction.account.currency.symbol))
 
             Image(systemName: Constants.chevronRight)
                 .font(.system(size: Constants.chevronFontSize, weight: .bold))

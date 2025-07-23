@@ -53,12 +53,12 @@ final class AnalyticsCategoryCell: UITableViewCell {
         stack.pinRight(to: wrap)
     }
 
-    func configure(with category: CategoryAnalytics) {
+    func configure(with category: CategoryAnalytics, currencySymbol: String) {
         categoryEmojiLabel.text = "\(category.emoji)"
         categoryNameLabel.text = category.name
         categoryDescriptionLabel.text = category.description
         let value = (category.percentage * Decimal(100)).doubleValue
         categoryPercentageLabel.text = "\(Int(value.rounded(.toNearestOrAwayFromZero)))%"
-        categoryAmountLabel.text = category.totalValue.formattedWithSeparator()
+        categoryAmountLabel.text = category.totalValue.formattedWithSeparator(currencySymbol: currencySymbol)
     }
 }

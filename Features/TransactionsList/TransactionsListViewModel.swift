@@ -163,3 +163,7 @@ final class TransactionsListViewModel: ObservableObject {
         }
     }
 }
+
+extension TransactionsListViewModel {
+    var currencySymbol: String { account?.currency.symbol ?? "₽" }
+}

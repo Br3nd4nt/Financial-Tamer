@@ -193,3 +193,8 @@ final class AnalyticsViewModel: ObservableObject {
         }
     }
 }
+
+extension AnalyticsViewModel {
+    var accountPublic: BankAccount? { account }
+    var currencySymbol: String { account?.currency.symbol ?? "₽" }
+}
