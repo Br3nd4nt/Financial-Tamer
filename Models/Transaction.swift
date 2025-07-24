@@ -18,7 +18,11 @@ struct Transaction: Identifiable, Codable {
     let updatedAt: Date
 }
 
-struct TransactionFull: Identifiable {
+struct TransactionFull: Identifiable, Equatable {
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.id == rhs.id
+    }
+
     let id: Int
     let account: BankAccount
     let category: Category

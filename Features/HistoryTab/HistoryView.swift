@@ -202,7 +202,7 @@ struct HistoryView: View {
         .onAppear {
             viewModel.errorHandler = errorHandler
         }
-        .onChange(of: selectedTransaction) { newValue in
+        .onChange(of: selectedTransaction) { newValue, _ in
             if newValue == nil {
                 Task {
                     await viewModel.loadTransactions()
