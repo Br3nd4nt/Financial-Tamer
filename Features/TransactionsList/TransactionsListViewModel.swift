@@ -33,8 +33,8 @@ final class TransactionsListViewModel: ObservableObject {
 
     private var dayStart: Date = Calendar.current.startOfDay(for: Date())
     private var dayEnd: Date = {
-        guard let date = Calendar.current.date(byAdding: DateComponents(day: 1, second: -1), to: Calendar.current.startOfDay(for: Date())) else {
-            print("Failled to get tomorrow date")
+        guard let date = Calendar.current.date(byAdding: DateComponents(day: 1), to: Calendar.current.startOfDay(for: Date())) else {
+            print("Failed to get tomorrow date")
             return Date()
         }
         return date
@@ -114,11 +114,13 @@ final class TransactionsListViewModel: ObservableObject {
         }
 
         do {
+            print("TransactionsListViewModel: Loading transactions from \(dayStart) to \(dayEnd)")
             let loadedTransactions = try await transactionsProtocol.getTransactionsInTimeFrame(
                 accountId: accountId,
                 startDate: dayStart,
                 endDate: dayEnd
             )
+            print("TransactionsListViewModel: Loaded \(loadedTransactions.count) transactions")
             self.rawTransactions = loadedTransactions
         } catch {
             print("Failed to load transactions: \(error)")

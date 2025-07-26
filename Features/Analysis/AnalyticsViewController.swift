@@ -45,8 +45,13 @@ final class AnalyticsViewController: UIViewController {
     }
 
     init(_ direction: Direction, errorHandler: ErrorHandler) {
+        let endDate = Date()
+        let startDate = Calendar.current.date(byAdding: .day, value: -7, to: endDate) ?? endDate
+
         viewModel = AnalyticsViewModel(
-            direction: direction
+            direction: direction,
+            startDate: startDate,
+            endDate: endDate
         )            { error, context, userMessage in
                 errorHandler.handleError(error, context: context, userMessage: userMessage)
         }
@@ -139,7 +144,14 @@ final class AnalyticsViewController: UIViewController {
         categoriesTableView.reloadData()
         let currencySymbol = viewModel.currencySymbol
         headerView.changeTotal(viewModel.total, currencySymbol: currencySymbol)
+        print("AnalyticsViewController: pieChartEntities count: \(viewModel.pieChartEntities.count)")
+        headerView.updatePieChart(viewModel.pieChartEntities)
         updateTableHeaderLayout()
+
+        // Принудительно обновляем layout для PieChart
+        DispatchQueue.main.async {
+            self.headerView.pieChartView.setNeedsDisplay()
+        }
     }
 
     private func updateTableHeaderLayout() {

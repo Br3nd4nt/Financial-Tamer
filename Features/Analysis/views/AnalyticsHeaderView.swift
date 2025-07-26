@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import PieChart
 
 final class AnalyticsHeaderView: UIView {
     private enum Constants {
@@ -28,6 +29,7 @@ final class AnalyticsHeaderView: UIView {
     private let endDateRow = AnalyticsParamView(Constants.endTitle)
     private let selectorWrap = UIView()
     private let selectorTitle = UILabel()
+    let pieChartView = PieChartView()
     // need to setup target later in the man viewcontroller
     let selector = UISegmentedControl()
     private let totalRow = AnalyticsParamView(Constants.totalTitle, isDatePicker: false)
@@ -35,14 +37,19 @@ final class AnalyticsHeaderView: UIView {
     init() {
         super.init(frame: .zero)
         setupSelector()
-        let views = [startDateRow, endDateRow, selectorWrap, totalRow]
+        let views = [startDateRow, endDateRow, selectorWrap, totalRow, pieChartView]
         let stack = UIStackView()
         stack.axis = .vertical
         stack.spacing = 0
         stack.backgroundColor = .systemBackground
         for (index, view) in views.enumerated() {
             stack.addArrangedSubview(view)
-            view.setHeight(mode: .grOE, Constants.rowHeight)
+            if view == pieChartView {
+                // Для PieChart даем больше места
+                view.setHeight(mode: .grOE, 200)
+            } else {
+                view.setHeight(mode: .grOE, Constants.rowHeight)
+            }
             if index < views.count - 1 {
                 let separator = UIView()
                 separator.backgroundColor = Constants.separatorColor
@@ -94,6 +101,13 @@ final class AnalyticsHeaderView: UIView {
             return
         }
         label.text = total.formattedWithSeparator(currencySymbol: currencySymbol)
+    }
+
+    func updatePieChart(_ data: [Entity]) {
+        print("AnalyticsHeaderView: updatePieChart called with \(data.count) entities")
+        pieChartView.entities = data
+        pieChartView.setNeedsDisplay()
+        pieChartView.layoutIfNeeded()
     }
 }
 

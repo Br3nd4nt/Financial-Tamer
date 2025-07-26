@@ -7,9 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		065F70872E3446D500484BBD /* PieChart in Frameworks */ = {isa = PBXBuildFile; productRef = 065F70862E3446D500484BBD /* PieChart */; };
 		0663DCA62E30CE5B009184D4 /* Config.template.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0663DCA52E30CE5B009184D4 /* Config.template.swift */; };
 		0663DD772E30F51F009184D4 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0663DD762E30F51F009184D4 /* Config.swift */; };
 		069F05C22E33D6910000A6FE /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 069F05C12E33D6910000A6FE /* Lottie */; };
+		069F05CA2E33DBFC0000A6FE /* PieChart in Frameworks */ = {isa = PBXBuildFile; productRef = 069F05C92E33DBFC0000A6FE /* PieChart */; };
+		069F05CC2E33DBFC0000A6FE /* Utilities in Frameworks */ = {isa = PBXBuildFile; productRef = 069F05CB2E33DBFC0000A6FE /* Utilities */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -103,6 +106,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				065F70872E3446D500484BBD /* PieChart in Frameworks */,
+				069F05CA2E33DBFC0000A6FE /* PieChart in Frameworks */,
+				069F05CC2E33DBFC0000A6FE /* Utilities in Frameworks */,
 				069F05C22E33D6910000A6FE /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -172,6 +178,9 @@
 			name = "Financial Tamer";
 			packageProductDependencies = (
 				069F05C12E33D6910000A6FE /* Lottie */,
+				069F05C92E33DBFC0000A6FE /* PieChart */,
+				069F05CB2E33DBFC0000A6FE /* Utilities */,
+				065F70862E3446D500484BBD /* PieChart */,
 			);
 			productName = "Financial Tamer";
 			productReference = 068636102DF74110001F2E7F /* Financial Tamer.app */;
@@ -231,6 +240,7 @@
 			packageReferences = (
 				06AA34242E15FCA700615099 /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */,
 				069F05C02E33D6910000A6FE /* XCRemoteSwiftPackageReference "lottie-ios" */,
+				065F70852E3446D500484BBD /* XCLocalSwiftPackageReference "Utilities" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 068636112DF74110001F2E7F /* Products */;
@@ -453,9 +463,13 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "br3nd4nt.Financial-Tamer";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -482,9 +496,13 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "br3nd4nt.Financial-Tamer";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -556,6 +574,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		065F70852E3446D500484BBD /* XCLocalSwiftPackageReference "Utilities" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Utilities;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		069F05C02E33D6910000A6FE /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -576,10 +601,22 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		065F70862E3446D500484BBD /* PieChart */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PieChart;
+		};
 		069F05C12E33D6910000A6FE /* Lottie */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 069F05C02E33D6910000A6FE /* XCRemoteSwiftPackageReference "lottie-ios" */;
 			productName = Lottie;
+		};
+		069F05C92E33DBFC0000A6FE /* PieChart */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PieChart;
+		};
+		069F05CB2E33DBFC0000A6FE /* Utilities */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Utilities;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

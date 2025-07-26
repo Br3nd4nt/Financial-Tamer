@@ -56,7 +56,7 @@ final class TransactionEditViewModel: ObservableObject {
             self.category = nil
             self.amount = 0
             self.amountString = ""
-            self.date = Date()
+            self.date = Calendar.current.startOfDay(for: Date())
             self.comment = ""
         }
         Task {

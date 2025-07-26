@@ -22,8 +22,8 @@ struct HistoryView: View {
         self.direction = direction
         let dayStart: Date = Calendar.current.startOfDay(for: Date())
         let dayEnd: Date = {
-            guard let date = Calendar.current.date(byAdding: DateComponents(day: Constants.dayLengthDay, second: Constants.dayLengthSecond), to: Calendar.current.startOfDay(for: Date())) else {
-                print(Constants.failedToCreateDate)
+            guard let date = Calendar.current.date(byAdding: DateComponents(day: 1), to: Calendar.current.startOfDay(for: Date())) else {
+                print("Failed to create tomorrow date")
                 return Date()
             }
             return date
@@ -46,8 +46,8 @@ struct HistoryView: View {
             DatePicker(selection: $viewModel.dayStart, in: ...maximumDate, displayedComponents: .date) {}
                 .onChange(of: viewModel.dayStart) {
                     if viewModel.dayEnd < viewModel.dayStart {
-                        guard let date = Calendar.current.date(byAdding: dayLength, to: viewModel.dayStart) else {
-                            print(Constants.failedToCreateDate)
+                        guard let date = Calendar.current.date(byAdding: DateComponents(day: 1), to: viewModel.dayStart) else {
+                            print("Failed to create tomorrow date")
                             return
                         }
                         viewModel.dayEnd = date
