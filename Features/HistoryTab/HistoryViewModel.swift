@@ -88,11 +88,13 @@ final class HistoryViewModel: ObservableObject {
         }
 
         do {
+            print("HistoryViewModel: Loading transactions from \(dayStart) to \(dayEnd)")
             let loadedTransactions = try await transactionsProtocol.getTransactionsInTimeFrame(
                 accountId: accountId,
                 startDate: dayStart,
                 endDate: dayEnd
             )
+            print("HistoryViewModel: Loaded \(loadedTransactions.count) transactions")
             self.rawTransactions = loadedTransactions
         } catch {
             errorHandler.handleError(error, context: "HistoryViewModel.loadTransactions", userMessage: "Не удалось загрузить транзакции")

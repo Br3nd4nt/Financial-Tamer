@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import PieChart
 
 @MainActor
 final class AnalyticsViewModel: ObservableObject {
@@ -30,6 +31,14 @@ final class AnalyticsViewModel: ObservableObject {
         didSet {
             categoryRows.sort(by: sortCategories)
         }
+    }
+
+    var pieChartEntities: [Entity] {
+        let entities = categoryRows.map { category in
+            Entity(value: category.totalValue, label: category.name)
+        }
+        print("AnalyticsViewModel: pieChartEntities computed, count: \(entities.count)")
+        return entities
     }
 
     private let direction: Direction
@@ -62,7 +71,7 @@ final class AnalyticsViewModel: ObservableObject {
         self.bankAccountsProtocol = bankAccountsProtocol
         self.onError = onError
         self.dayStart = startDate.startOfDay
-        self.dayEnd = endDate.endOfDay
+        self.dayEnd = Calendar.current.date(byAdding: DateComponents(day: 1), to: endDate.startOfDay) ?? endDate.endOfDay
     }
 
     var total: Decimal {
@@ -141,6 +150,7 @@ final class AnalyticsViewModel: ObservableObject {
             }
         }
         categoryRows = categories
+        sortOption = .byAmount
     }
 
     private func reloadData() {
@@ -155,17 +165,17 @@ final class AnalyticsViewModel: ObservableObject {
         let pickedStart = sender.date.startOfDay
         dayStart = pickedStart
         if dayEnd < dayStart {
-            dayEnd = pickedStart.endOfDay
+            dayEnd = Calendar.current.date(byAdding: DateComponents(day: 1), to: pickedStart) ?? pickedStart.endOfDay
             setEndDateForPicker?(dayEnd)
         }
         reloadData()
     }
 
     @objc func endDateChanged(_ sender: UIDatePicker) {
-        let pickedEnd = sender.date.endOfDay
+        let pickedEnd = Calendar.current.date(byAdding: DateComponents(day: 1), to: sender.date.startOfDay) ?? sender.date.endOfDay
         dayEnd = pickedEnd
         if dayEnd < dayStart {
-            dayStart = pickedEnd.startOfDay
+            dayStart = sender.date.startOfDay
             setStartDateForPicker?(dayStart)
         }
         reloadData()

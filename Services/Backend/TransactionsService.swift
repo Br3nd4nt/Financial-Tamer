@@ -72,11 +72,6 @@ final class TransactionsService: TransactionsProtocol {
             let dto = ModelMapper.mapToCreateDTO(transaction)
             print("[DEBUG] Creating transaction DTO: \(dto)")
             let encoder = JSONEncoder()
-            let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "en_US_POSIX")
-            formatter.timeZone = TimeZone(secondsFromGMT: 0)
-            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
-            encoder.dateEncodingStrategy = .formatted(formatter)
             let jsonData = try encoder.encode(dto)
             if let jsonString = String(data: jsonData, encoding: .utf8) {
                 print("[DEBUG] JSON body: \(jsonString)")
@@ -145,11 +140,6 @@ final class TransactionsService: TransactionsProtocol {
                     let endpoint = TransactionsEndpoint.createTransaction(transaction: transaction)
                     let dto = ModelMapper.mapToCreateDTO(transaction)
                     let encoder = JSONEncoder()
-                    let formatter = DateFormatter()
-                    formatter.locale = Locale(identifier: "en_US_POSIX")
-                    formatter.timeZone = TimeZone(secondsFromGMT: 0)
-                    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
-                    encoder.dateEncodingStrategy = .formatted(formatter)
                     let jsonData = try encoder.encode(dto)
                     let createdTransaction: Transaction = try await networkClient.request(endpoint, body: jsonData)
                     try await localStorage.create(createdTransaction)

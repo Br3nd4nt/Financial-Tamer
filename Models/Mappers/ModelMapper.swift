@@ -94,11 +94,12 @@ struct ModelMapper {
 
     static func mapToCreateDTO(_ transaction: Transaction) -> CreateTransactionDTO {
         let amountString = String(format: "%.2f", NSDecimalNumber(decimal: transaction.amount).doubleValue)
+        let dateString = dateFormatter.string(from: transaction.transactionDate)
         return CreateTransactionDTO(
             accountId: transaction.accountId,
             categoryId: transaction.categoryId,
             amount: amountString,
-            transactionDate: transaction.transactionDate,
+            transactionDate: dateString,
             comment: transaction.comment
         )
     }
